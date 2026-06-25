@@ -23,7 +23,7 @@
 body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;}
 
 /* ── SIDEBAR ── */
-.sidebar{width:220px;background:var(--white);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:100;}
+.sidebar{width:220px;background:var(--white);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:200;transition:transform .25s ease;}
 .logo{padding:28px 24px 20px;border-bottom:1px solid var(--border);}
 .logo-text{font-size:28px;font-weight:700;color:var(--red);letter-spacing:-1px;font-style:italic;}
 .logo-sub{font-size:10px;color:var(--text-muted);font-weight:500;letter-spacing:1.5px;text-transform:uppercase;margin-top:2px;}
@@ -32,10 +32,31 @@ nav{padding:16px 12px;flex:1;}
 .nav-item:hover{background:var(--bg);color:var(--text);}
 .nav-item.active{background:var(--red-bg);color:var(--red);font-weight:600;}
 .sidebar-footer{padding:16px;border-top:1px solid var(--border);font-size:11px;color:var(--text-muted);text-align:center;}
+.sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:150;}
+
+/* ── HAMBURGER ── */
+.hamburger{display:none;background:none;border:none;cursor:pointer;padding:4px;color:var(--text);}
 
 /* ── MAIN ── */
 .main{margin-left:220px;flex:1;min-height:100vh;}
 .topbar{background:var(--white);border-bottom:1px solid var(--border);padding:16px 32px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;}
+
+/* ── MOBILE ── */
+@media(max-width:768px){
+  .sidebar{transform:translateX(-100%);}
+  .sidebar.open{transform:translateX(0);}
+  .sidebar-overlay.open{display:block;}
+  .main{margin-left:0;}
+  .hamburger{display:flex;}
+  .topbar{padding:12px 16px;}
+  .content{padding:16px;}
+  .kpi-grid{grid-template-columns:1fr 1fr;}
+  .charts-grid{grid-template-columns:1fr;}
+  .form-grid{grid-template-columns:1fr;}
+  .form-grid.three{grid-template-columns:1fr;}
+  .form-grid.four{grid-template-columns:1fr 1fr;}
+  .topbar-actions-scroll{display:flex;gap:8px;overflow-x:auto;padding-bottom:2px;}
+}
 .page-title{font-size:18px;font-weight:600;}
 .page-subtitle{font-size:13px;color:var(--text-muted);margin-top:2px;}
 
@@ -186,26 +207,29 @@ input[disabled]{background:var(--bg);color:var(--text-muted);}
 </head>
 <body>
 
+<!-- OVERLAY -->
+<div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
+
 <!-- SIDEBAR -->
-<aside class="sidebar">
+<aside class="sidebar" id="sidebar">
   <div class="logo">
     <div class="logo-text">isbe.</div>
     <div class="logo-sub">Control de Ventas</div>
   </div>
   <nav>
-    <div class="nav-item active" onclick="showView('dashboard')">
+    <div class="nav-item active" onclick="showView('dashboard');closeSidebar()">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
       Dashboard
     </div>
-    <div class="nav-item" onclick="showView('nueva')">
+    <div class="nav-item" onclick="showView('nueva');closeSidebar()">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
       Nueva Venta
     </div>
-    <div class="nav-item" onclick="showView('pedidos')">
+    <div class="nav-item" onclick="showView('pedidos');closeSidebar()">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 17H7A5 5 0 010 12v0a5 5 0 015-5h2"/><path d="M15 7h2a5 5 0 010 10h-2"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
       Pedidos
     </div>
-    <div class="nav-item" onclick="showView('historial')">
+    <div class="nav-item" onclick="showView('historial');closeSidebar()">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
       Historial
     </div>
@@ -216,9 +240,14 @@ input[disabled]{background:var(--bg);color:var(--text-muted);}
 <!-- MAIN -->
 <main class="main">
   <div class="topbar">
-    <div>
+    <div style="display:flex;align-items:center;gap:12px;">
+      <button class="hamburger" onclick="toggleSidebar()" aria-label="Menú">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+      <div>
       <div class="page-title" id="topbar-title">Dashboard</div>
       <div class="page-subtitle" id="topbar-sub">Resumen general de tu negocio</div>
+    </div>
     </div>
     <div style="display:flex;gap:10px;align-items:center;">
       <span id="sync-status" style="font-size:11px;color:var(--text-muted);">💾 Solo local</span>
@@ -538,6 +567,15 @@ async function cargarDesdeDrive(){
   } catch(e){
     setSyncStatus('offline','Sin conexión — usando datos locales');
   }
+}
+
+function toggleSidebar(){
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('sidebar-overlay').classList.toggle('open');
+}
+function closeSidebar(){
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebar-overlay').classList.remove('open');
 }
 
 async function borrarTodo(){
