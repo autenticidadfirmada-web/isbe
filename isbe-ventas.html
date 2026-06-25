@@ -490,6 +490,21 @@ input[disabled]{background:var(--bg);color:var(--text-muted);}
 </main>
 
 <!-- MODAL PEDIDO -->
+<!-- SYNC MODAL -->
+<div class="modal-overlay" id="sync-modal" style="display:none;" onclick="if(event.target===this)this.style.display='none'">
+  <div class="modal" onclick="event.stopPropagation()" style="max-width:420px;">
+    <div class="modal-header">
+      <div style="font-size:16px;font-weight:700;">⚙️ Configurar Sync</div>
+      <button class="modal-close" onclick="document.getElementById('sync-modal').style.display='none'">✕</button>
+    </div>
+    <div class="modal-body" style="padding:20px;">
+      <p style="font-size:13px;color:var(--text-muted);margin-bottom:16px;">Pega la URL de tu Apps Script para sincronizar entre dispositivos.</p>
+      <input type="url" id="sync-url-input" placeholder="https://script.google.com/macros/s/..." style="width:100%;margin-bottom:16px;">
+      <button class="btn btn-primary" style="width:100%;" onclick="guardarSyncURL()">Guardar y sincronizar</button>
+    </div>
+  </div>
+</div>
+
 <div class="modal-overlay" id="modal-overlay" style="display:none;" onclick="closeModal(event)">
   <div class="modal" onclick="event.stopPropagation()">
     <div class="modal-header">
@@ -596,13 +611,19 @@ async function borrarTodo(){
 }
 
 function configurarURL(){
-  const url = prompt('Pega la URL de tu Apps Script (la que termina en /exec):');
+  const input = document.getElementById('sync-url-input');
+  if(SCRIPT_URL) input.value = SCRIPT_URL;
+  document.getElementById('sync-modal').style.display = 'flex';
+}
+function guardarSyncURL(){
+  const url = document.getElementById('sync-url-input').value.trim();
   if(url && url.includes('script.google.com')){
-    SCRIPT_URL = url.trim();
+    SCRIPT_URL = url;
     localStorage.setItem(SYNC_KEY, SCRIPT_URL);
+    document.getElementById('sync-modal').style.display = 'none';
     showToast('✓ URL guardada — sincronizando…','success');
     cargarDesdeDrive().then(()=>{ renderDashboard(); populateAños(); });
-  } else if(url) {
+  } else {
     showToast('URL inválida — debe ser de script.google.com','error');
   }
 }
