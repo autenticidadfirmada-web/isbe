@@ -536,7 +536,7 @@ const KEY = 'isbe_ventas_v2';
 const SYNC_KEY = 'isbe_script_url';
 
 // Cambia esta URL por la de tu Apps Script después de desplegarlo
-const DEFAULT_SYNC_URL = 'https://script.google.com/macros/s/AKfycbx4sGrHHShXuhFh1AseOGTMVNOw9Z458Lz8JJl42wXMc1z8NG3qttUrEEBvQAs1ewAZAA/exec';
+const DEFAULT_SYNC_URL = 'https://script.google.com/macros/s/AKfycbyZXn5QGKBwOEiDqrCAKhe7nRL-g6PrY1GcMpxcK5LQfWV2J6Aye5ZXrsTE9oMJNirs2Q/exec';
 let SCRIPT_URL = localStorage.getItem(SYNC_KEY) || DEFAULT_SYNC_URL;
 if(!localStorage.getItem(SYNC_KEY)){ localStorage.setItem(SYNC_KEY, DEFAULT_SYNC_URL); }
 
@@ -562,6 +562,9 @@ async function sincronizarConDrive(ventas){
     await fetch(SCRIPT_URL, {
       method:'POST',
       body: JSON.stringify(ventas),
+      redirect: 'follow',
+      credentials: 'omit',
+      mode: 'no-cors'
     });
     setSyncStatus('ok','Sincronizado con Drive ' + new Date().toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'}));
   } catch(e){
@@ -572,18 +575,32 @@ async function sincronizarConDrive(ventas){
 async function cargarDesdeDrive(){
   if(!SCRIPT_URL){ setSyncStatus('offline','Guardado local'); return; }
   setSyncStatus('syncing','Cargando desde Drive…');
-  try{
-    const r = await fetch(SCRIPT_URL + '?t=' + Date.now());
-    const ventas = await r.json();
-    if(Array.isArray(ventas) && ventas.length > 0){
-      localStorage.setItem(KEY, JSON.stringify(ventas));
-      setSyncStatus('ok','Sincronizado · ' + ventas.length + ' ventas');
-    } else {
-      setSyncStatus('ok','Conectado — sin datos en Drive aún');
-    }
-  } catch(e){
-    setSyncStatus('offline','Sin conexión — usando datos locales');
-  }
+  return new Promise((resolve)=>{
+    const cb = 'isbe_cb_' + Date.now();
+    const script = document.createElement('script');
+    window[cb] = function(data){
+      delete window[cb];
+      document.body.removeChild(script);
+      try{
+        const ventas = Array.isArray(data) ? data : [];
+        if(ventas.length > 0){
+          localStorage.setItem(KEY, JSON.stringify(ventas));
+          setSyncStatus('ok','Sincronizado · ' + ventas.length + ' ventas');
+        } else {
+          setSyncStatus('ok','Conectado — sin datos en Drive aún');
+        }
+      } catch(e){ setSyncStatus('offline','Error al leer datos'); }
+      resolve();
+    };
+    script.onerror = function(){
+      delete window[cb];
+      try{ document.body.removeChild(script); }catch(e){}
+      setSyncStatus('offline','Sin conexión — usando datos locales');
+      resolve();
+    };
+    script.src = SCRIPT_URL + '?callback=' + cb + '&t=' + Date.now();
+    document.body.appendChild(script);
+  });
 }
 
 function toggleSidebar(){
