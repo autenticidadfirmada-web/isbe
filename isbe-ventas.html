@@ -536,7 +536,9 @@ const KEY = 'isbe_ventas_v2';
 const SYNC_KEY = 'isbe_script_url';
 
 // Cambia esta URL por la de tu Apps Script después de desplegarlo
-let SCRIPT_URL = localStorage.getItem(SYNC_KEY) || '';
+const DEFAULT_SYNC_URL = 'https://script.google.com/macros/s/AKfycbx4sGrHHShXuhFh1AseOGTMVNOw9Z458Lz8JJl42wXMc1z8NG3qttUrEEBvQAs1ewAZAA/exec';
+let SCRIPT_URL = localStorage.getItem(SYNC_KEY) || DEFAULT_SYNC_URL;
+if(!localStorage.getItem(SYNC_KEY)){ localStorage.setItem(SYNC_KEY, DEFAULT_SYNC_URL); }
 
 function getVentas(){ try{ return JSON.parse(localStorage.getItem(KEY))||[]; }catch{ return []; } }
 function setVentas(arr){
@@ -617,14 +619,14 @@ function configurarURL(){
 }
 function guardarSyncURL(){
   const url = document.getElementById('sync-url-input').value.trim();
-  if(url && url.includes('script.google.com')){
+  if(url && url.startsWith('https://')){
     SCRIPT_URL = url;
     localStorage.setItem(SYNC_KEY, SCRIPT_URL);
     document.getElementById('sync-modal').style.display = 'none';
     showToast('✓ URL guardada — sincronizando…','success');
     cargarDesdeDrive().then(()=>{ renderDashboard(); populateAños(); });
   } else {
-    showToast('URL inválida — debe ser de script.google.com','error');
+    showToast('Pega la URL completa que empieza con https://','error');
   }
 }
 
