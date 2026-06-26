@@ -203,6 +203,34 @@ input[disabled]{background:var(--bg);color:var(--text-muted);}
 
 .pedidos-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
 @media(max-width:900px){.pedidos-grid{grid-template-columns:1fr;}.kpi-grid{grid-template-columns:repeat(3,1fr);}.charts-grid{grid-template-columns:1fr;}}
+
+/* ── FINANZAS / INVENTARIO / SOCIOS ── */
+.pe-bar-wrap{background:var(--border);border-radius:20px;height:14px;overflow:hidden;margin:12px 0 6px;}
+.pe-bar{height:100%;border-radius:20px;background:linear-gradient(90deg,var(--red),var(--red-light));transition:width .5s;}
+.pe-bar.green{background:linear-gradient(90deg,#16A34A,#22C55E);}
+.inv-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px;}
+@media(max-width:768px){.inv-grid{grid-template-columns:1fr 1fr;}}
+.inv-card{background:var(--white);border-radius:var(--radius);padding:16px;border:1px solid var(--border);box-shadow:var(--shadow);}
+.inv-cat{font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px;}
+.inv-ref{font-size:14px;font-weight:700;color:var(--text);margin-bottom:4px;}
+.inv-qty{font-size:28px;font-weight:700;color:var(--red);line-height:1;}
+.inv-qty.low{color:#D97706;}
+.inv-qty.zero{color:#DC2626;}
+.inv-actions{display:flex;gap:6px;margin-top:10px;}
+.inv-btn{flex:1;padding:5px;border:1px solid var(--border);border-radius:6px;background:var(--bg);font-size:12px;font-weight:600;cursor:pointer;text-align:center;}
+.inv-btn:hover{background:var(--border);}
+.socio-card{background:var(--white);border-radius:var(--radius);padding:24px;border:1px solid var(--border);box-shadow:var(--shadow);text-align:center;}
+.socio-avatar{width:60px;height:60px;border-radius:50%;background:var(--red);color:white;font-size:22px;font-weight:700;display:flex;align-items:center;justify-content:center;margin:0 auto 12px;}
+.socio-nombre{font-size:16px;font-weight:700;margin-bottom:4px;}
+.socio-pct{font-size:13px;color:var(--text-muted);}
+.socio-monto{font-size:24px;font-weight:700;color:#16A34A;margin-top:12px;}
+.socios-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px;}
+.gasto-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);}
+.gasto-row:last-child{border-bottom:none;}
+.gasto-nombre{flex:1;font-size:13px;font-weight:500;}
+.gasto-monto{font-size:13px;font-weight:700;color:var(--text);}
+.gasto-del{background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:16px;padding:2px 6px;border-radius:4px;}
+.gasto-del:hover{color:var(--red);background:var(--red-bg);}
 </style>
 </head>
 <body>
@@ -232,6 +260,18 @@ input[disabled]{background:var(--bg);color:var(--text-muted);}
     <div class="nav-item" onclick="showView('historial');closeSidebar()">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
       Historial
+    </div>
+    <div class="nav-item" onclick="showView('finanzas');closeSidebar()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+      Finanzas
+    </div>
+    <div class="nav-item" onclick="showView('inventario');closeSidebar()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg>
+      Inventario
+    </div>
+    <div class="nav-item" onclick="showView('socios');closeSidebar()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+      Socios
     </div>
   </nav>
   <div class="sidebar-footer">isbe. © 2026</div>
@@ -487,6 +527,110 @@ input[disabled]{background:var(--bg);color:var(--text-muted);}
     </div>
     <div class="card"><div class="table-wrap" id="tabla-historial"></div></div>
   </div>
+
+  <!-- ══════════ FINANZAS ══════════ -->
+  <div id="view-finanzas" class="view content">
+    <div class="kpi-grid" style="grid-template-columns:repeat(4,1fr);">
+      <div class="kpi-card"><div class="kpi-label">Inversión Inicial</div><div class="kpi-value red" id="fin-inversion">$0</div><div class="kpi-change">Capital invertido</div></div>
+      <div class="kpi-card"><div class="kpi-label">Recuperado</div><div class="kpi-value green" id="fin-recuperado">$0</div><div class="kpi-change">Utilidad neta acumulada</div></div>
+      <div class="kpi-card"><div class="kpi-label">Por Recuperar</div><div class="kpi-value" id="fin-faltante">$0</div><div class="kpi-change" id="fin-faltante-sub">Para punto de equilibrio</div></div>
+      <div class="kpi-card"><div class="kpi-label">Punto de Equilibrio</div><div class="kpi-value" id="fin-pe-pct">0%</div><div class="kpi-change" id="fin-pe-sub">alcanzado</div></div>
+    </div>
+    <div class="card" style="margin-bottom:20px;">
+      <div class="card-header"><div class="card-title">Progreso hacia el Punto de Equilibrio</div></div>
+      <div class="pe-bar-wrap"><div class="pe-bar" id="pe-bar" style="width:0%"></div></div>
+      <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text-muted);">
+        <span>$0</span><span id="pe-bar-label">Meta: $0</span>
+      </div>
+      <canvas id="chart-acumulado" style="margin-top:20px;max-height:220px;"></canvas>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Inversión Inicial</div>
+          <button class="btn btn-primary btn-sm" onclick="editarInversion()">Editar</button>
+        </div>
+        <div id="fin-inv-detalle" style="font-size:13px;color:var(--text-muted);padding:8px 0;">Cargando…</div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Gastos Fijos Mensuales</div>
+          <button class="btn btn-primary btn-sm" onclick="abrirModalGasto()">+ Agregar</button>
+        </div>
+        <div id="lista-gastos-fijos"></div>
+        <div style="border-top:1px solid var(--border);padding-top:12px;margin-top:4px;display:flex;justify-content:space-between;font-size:13px;font-weight:700;">
+          <span>Total mensual</span><span id="total-gastos-fijos">$0</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════ INVENTARIO ══════════ -->
+  <div id="view-inventario" class="view content">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+      <div>
+        <div style="font-size:16px;font-weight:700;">Control de Inventario</div>
+        <div style="font-size:13px;color:var(--text-muted);" id="inv-resumen">0 referencias · 0 unidades</div>
+      </div>
+      <button class="btn btn-primary" onclick="abrirModalInventario()">+ Nueva referencia</button>
+    </div>
+    <div class="inv-grid" id="inv-grid"></div>
+    <div class="card" style="margin-top:4px;">
+      <div class="card-header"><div class="card-title">Detalle de Inventario</div></div>
+      <div class="table-wrap"><table id="inv-tabla">
+        <thead><tr><th>Referencia</th><th>Descripción</th><th>Categoría</th><th>Cantidad</th><th>Costo Unit.</th><th>P. Venta</th><th>Valor Stock</th><th></th></tr></thead>
+        <tbody id="inv-tbody"></tbody>
+      </table></div>
+    </div>
+  </div>
+
+  <!-- ══════════ SOCIOS ══════════ -->
+  <div id="view-socios" class="view content">
+    <div class="socios-grid">
+      <div class="socio-card">
+        <div class="socio-avatar" id="soc1-avatar">S1</div>
+        <div class="socio-nombre" id="soc1-nombre">Socio 1</div>
+        <div class="socio-pct">50% participación</div>
+        <div class="socio-monto" id="soc1-monto">$0</div>
+        <div style="font-size:11px;color:var(--text-muted);margin-top:4px;">disponible para repartir</div>
+      </div>
+      <div class="socio-card">
+        <div class="socio-avatar" id="soc2-avatar" style="background:#4F46E5;">S2</div>
+        <div class="socio-nombre" id="soc2-nombre">Socio 2</div>
+        <div class="socio-pct">50% participación</div>
+        <div class="socio-monto" id="soc2-monto">$0</div>
+        <div style="font-size:11px;color:var(--text-muted);margin-top:4px;">disponible para repartir</div>
+      </div>
+    </div>
+    <div class="card" style="margin-bottom:20px;">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Utilidades Disponibles</div>
+          <div class="card-subtitle">Utilidad neta acumulada pendiente de distribución</div>
+        </div>
+        <button class="btn btn-primary" onclick="abrirModalReparto()">Registrar reparto</button>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;padding-top:4px;">
+        <div><div style="font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px;">Utilidad Total</div><div style="font-size:22px;font-weight:700;color:#16A34A;" id="soc-utilidad-total">$0</div></div>
+        <div><div style="font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px;">Ya Repartido</div><div style="font-size:22px;font-weight:700;" id="soc-ya-repartido">$0</div></div>
+        <div><div style="font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px;">Disponible</div><div style="font-size:22px;font-weight:700;color:var(--red);" id="soc-disponible">$0</div></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-title">Historial de Repartos</div></div>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Fecha</th><th>Utilidad repartida</th><th>Socio 1 (50%)</th><th>Socio 2 (50%)</th><th>Notas</th><th></th></tr></thead>
+        <tbody id="socios-tbody"></tbody>
+      </table></div>
+    </div>
+    <div class="card" style="margin-top:20px;">
+      <div class="card-header"><div class="card-title">Configurar nombres de socios</div></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;padding-top:4px;">
+        <div class="form-group"><label>Nombre Socio 1</label><input id="soc1-input" type="text" placeholder="Nombre" oninput="guardarNombresSocios()"></div>
+        <div class="form-group"><label>Nombre Socio 2</label><input id="soc2-input" type="text" placeholder="Nombre" oninput="guardarNombresSocios()"></div>
+      </div>
+    </div>
+  </div>
 </main>
 
 <!-- MODAL PEDIDO -->
@@ -522,6 +666,56 @@ input[disabled]{background:var(--bg);color:var(--text-muted);}
         <div style="font-size:12px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">Cambiar Estado</div>
         <div class="estado-actions" id="modal-actions"></div>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL GASTO FIJO -->
+<div class="modal-overlay" id="modal-gasto" style="display:none;" onclick="if(event.target===this)this.style.display='none'">
+  <div class="modal" onclick="event.stopPropagation()" style="max-width:380px;">
+    <div class="modal-header"><div style="font-size:16px;font-weight:700;">Gasto Fijo</div><button class="modal-close" onclick="document.getElementById('modal-gasto').style.display='none'">✕</button></div>
+    <div class="modal-body" style="padding:20px;display:flex;flex-direction:column;gap:14px;">
+      <div class="form-group"><label>Nombre del gasto</label><input id="gasto-nombre" type="text" placeholder="Ej: Arriendo, Internet…"></div>
+      <div class="form-group"><label>Monto mensual</label><input id="gasto-monto" type="number" placeholder="0"></div>
+      <button class="btn btn-primary" onclick="guardarGasto()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL INVENTARIO -->
+<div class="modal-overlay" id="modal-inventario" style="display:none;" onclick="if(event.target===this)this.style.display='none'">
+  <div class="modal" onclick="event.stopPropagation()" style="max-width:420px;">
+    <div class="modal-header"><div style="font-size:16px;font-weight:700;" id="inv-modal-titulo">Nueva Referencia</div><button class="modal-close" onclick="document.getElementById('modal-inventario').style.display='none'">✕</button></div>
+    <div class="modal-body" style="padding:20px;display:flex;flex-direction:column;gap:14px;">
+      <input type="hidden" id="inv-edit-id">
+      <div class="form-group"><label>Referencia</label><input id="inv-ref" type="text" placeholder="Ej: TW-001"></div>
+      <div class="form-group"><label>Descripción</label><input id="inv-desc" type="text" placeholder="Descripción de la cartera"></div>
+      <div class="form-group"><label>Categoría</label>
+        <select id="inv-cat"><option value="TWIN STRAP">TWIN STRAP</option><option value="MAXI">MAXI</option><option value="MID">MID</option><option value="STRAP UNICO">STRAP UNICO</option><option value="ACCESORIOS">ACCESORIOS</option></select>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;">
+        <div class="form-group"><label>Cantidad</label><input id="inv-qty" type="number" min="0" placeholder="0"></div>
+        <div class="form-group"><label>Costo Unit.</label><input id="inv-costo" type="number" min="0" placeholder="0"></div>
+        <div class="form-group"><label>P. Venta</label><input id="inv-pv" type="number" min="0" placeholder="0"></div>
+      </div>
+      <button class="btn btn-primary" onclick="guardarInventario()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL REPARTO -->
+<div class="modal-overlay" id="modal-reparto" style="display:none;" onclick="if(event.target===this)this.style.display='none'">
+  <div class="modal" onclick="event.stopPropagation()" style="max-width:400px;">
+    <div class="modal-header"><div style="font-size:16px;font-weight:700;">Registrar Reparto</div><button class="modal-close" onclick="document.getElementById('modal-reparto').style.display='none'">✕</button></div>
+    <div class="modal-body" style="padding:20px;display:flex;flex-direction:column;gap:14px;">
+      <div class="form-group"><label>Fecha del reparto</label><input id="rep-fecha" type="date"></div>
+      <div class="form-group"><label>Utilidad a repartir</label><input id="rep-monto" type="number" placeholder="0" oninput="previewReparto()"></div>
+      <div id="rep-preview" style="background:var(--red-bg);border-radius:8px;padding:12px;font-size:13px;display:none;">
+        <div style="display:flex;justify-content:space-between;margin-bottom:6px;"><span id="rep-soc1-nombre">Socio 1</span><strong id="rep-soc1-val">$0</strong></div>
+        <div style="display:flex;justify-content:space-between;"><span id="rep-soc2-nombre">Socio 2</span><strong id="rep-soc2-val">$0</strong></div>
+      </div>
+      <div class="form-group"><label>Notas (opcional)</label><input id="rep-notas" type="text" placeholder="Ej: Reparto semestral Q1…"></div>
+      <button class="btn btn-primary" onclick="guardarReparto()">Registrar reparto</button>
     </div>
   </div>
 </div>
@@ -678,18 +872,25 @@ const VIEWS_META = {
   nueva:{title:'Nueva Venta',sub:'Registra una venta'},
   pedidos:{title:'Pedidos',sub:'Seguimiento de todos tus pedidos'},
   historial:{title:'Historial',sub:'Todas tus ventas registradas'},
+  finanzas:{title:'Finanzas',sub:'Inversión, punto de equilibrio y gastos'},
+  inventario:{title:'Inventario',sub:'Control de referencias y stock'},
+  socios:{title:'Socios',sub:'Distribución de utilidades'},
 };
 
 function showView(name){
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
   document.getElementById('view-'+name).classList.add('active');
-  document.querySelector(`.nav-item[onclick="showView('${name}')"]`).classList.add('active');
+  const navEl = document.querySelector(`.nav-item[onclick*="showView('${name}')"]`);
+  if(navEl) navEl.classList.add('active');
   document.getElementById('topbar-title').textContent = VIEWS_META[name].title;
   document.getElementById('topbar-sub').textContent = VIEWS_META[name].sub;
   if(name==='dashboard') renderDashboard();
   if(name==='pedidos') renderPedidos();
   if(name==='historial'){ populateAños(); renderHistorial(); }
+  if(name==='finanzas') renderFinanzas();
+  if(name==='inventario') renderInventario();
+  if(name==='socios') renderSocios();
 }
 
 // ══════════════════════════════════════════════
@@ -1177,7 +1378,319 @@ function importarJSON(){
   input.click();
 }
 
-// App lista — sin datos precargados
+// ══════════════════════════════════════════════
+//  FINANZAS
+// ══════════════════════════════════════════════
+const FIN_KEY  = 'isbe_finanzas';
+const INV_KEY  = 'isbe_inventario';
+const SOC_KEY  = 'isbe_socios';
+
+function getFinanzas(){
+  try{ return JSON.parse(localStorage.getItem(FIN_KEY))||{inversionInicial:12000000,gastosFijos:[]}; }catch{ return {inversionInicial:12000000,gastosFijos:[]}; }
+}
+function setFinanzas(f){ localStorage.setItem(FIN_KEY,JSON.stringify(f)); }
+
+function getInventario(){ try{ return JSON.parse(localStorage.getItem(INV_KEY))||[]; }catch{ return []; } }
+function setInventario(a){ localStorage.setItem(INV_KEY,JSON.stringify(a)); }
+
+function getSocios(){
+  try{ return JSON.parse(localStorage.getItem(SOC_KEY))||{nombres:['Socio 1','Socio 2'],repartos:[]}; }catch{ return {nombres:['Socio 1','Socio 2'],repartos:[]}; }
+}
+function setSocios(s){ localStorage.setItem(SOC_KEY,JSON.stringify(s)); }
+
+let chartAcumulado = null;
+
+function renderFinanzas(){
+  const fin   = getFinanzas();
+  const ventas= getVentas();
+  const utilidadAcumulada = ventas.reduce((s,v)=>s+(v.unet||v.ubr||0),0);
+  const faltante = Math.max(0, fin.inversionInicial - utilidadAcumulada);
+  const pctPE    = Math.min(100, fin.inversionInicial>0 ? (utilidadAcumulada/fin.inversionInicial)*100 : 0);
+
+  document.getElementById('fin-inversion').textContent   = fmt(fin.inversionInicial);
+  document.getElementById('fin-recuperado').textContent  = fmt(utilidadAcumulada);
+  document.getElementById('fin-faltante').textContent    = fmt(faltante);
+  document.getElementById('fin-faltante-sub').textContent= faltante<=0 ? '¡Punto de equilibrio alcanzado! 🎉' : 'Para punto de equilibrio';
+  document.getElementById('fin-pe-pct').textContent      = pctPE.toFixed(1)+'%';
+  document.getElementById('fin-pe-sub').textContent      = 'alcanzado';
+
+  const bar = document.getElementById('pe-bar');
+  bar.style.width = pctPE+'%';
+  bar.className   = 'pe-bar'+(pctPE>=100?' green':'');
+  document.getElementById('pe-bar-label').textContent = 'Meta: '+fmt(fin.inversionInicial);
+
+  // Detalle inversión
+  document.getElementById('fin-inv-detalle').innerHTML =
+    `<div style="font-size:22px;font-weight:700;color:var(--red);margin-bottom:4px;">${fmt(fin.inversionInicial)}</div>
+     <div style="font-size:12px;color:var(--text-muted);">Capital inicial del negocio</div>
+     <button class="btn btn-secondary btn-sm" style="margin-top:12px;" onclick="editarInversion()">Cambiar monto</button>`;
+
+  // Gastos fijos
+  const lista = document.getElementById('lista-gastos-fijos');
+  const totalGF = (fin.gastosFijos||[]).reduce((s,g)=>s+g.monto,0);
+  lista.innerHTML = (fin.gastosFijos||[]).length===0
+    ? '<div style="font-size:13px;color:var(--text-muted);padding:8px 0;">Sin gastos fijos registrados</div>'
+    : (fin.gastosFijos||[]).map(g=>`
+        <div class="gasto-row">
+          <div class="gasto-nombre">${g.nombre}</div>
+          <div class="gasto-monto">${fmt(g.monto)}</div>
+          <button class="gasto-del" onclick="eliminarGasto('${g.id}')">×</button>
+        </div>`).join('');
+  document.getElementById('total-gastos-fijos').textContent = fmt(totalGF);
+
+  // Gráfica acumulada
+  const porMes = {};
+  ventas.forEach(v=>{
+    const m = v.fecha ? v.fecha.slice(0,7) : '';
+    if(!m) return;
+    porMes[m] = (porMes[m]||0) + (v.unet||v.ubr||0);
+  });
+  const meses = Object.keys(porMes).sort();
+  let acum = 0;
+  const acumData = meses.map(m=>{ acum+=porMes[m]; return acum; });
+
+  const ctx = document.getElementById('chart-acumulado').getContext('2d');
+  if(chartAcumulado) chartAcumulado.destroy();
+  chartAcumulado = new Chart(ctx,{
+    type:'line',
+    data:{
+      labels: meses.map(m=>{ const [y,mo]=m.split('-'); return MESES[parseInt(mo)-1]+' '+y.slice(2); }),
+      datasets:[
+        {label:'Utilidad acumulada',data:acumData,borderColor:'#16A34A',backgroundColor:'rgba(22,163,74,.1)',fill:true,tension:.4},
+        {label:'Inversión inicial',data:meses.map(()=>fin.inversionInicial),borderColor:'var(--red)',borderDash:[6,3],pointRadius:0}
+      ]
+    },
+    options:{responsive:true,plugins:{legend:{position:'bottom'}},scales:{y:{ticks:{callback:v=>fmt(v)}}}}
+  });
+}
+
+function editarInversion(){
+  const fin = getFinanzas();
+  const val = prompt('Monto de inversión inicial:', fin.inversionInicial);
+  if(val===null) return;
+  const n = parseFloat(val.replace(/[^0-9.]/g,''));
+  if(isNaN(n)||n<0){ showToast('Monto inválido','error'); return; }
+  fin.inversionInicial = n;
+  setFinanzas(fin);
+  renderFinanzas();
+  showToast('✓ Inversión actualizada','success');
+}
+
+function abrirModalGasto(){
+  document.getElementById('gasto-nombre').value='';
+  document.getElementById('gasto-monto').value='';
+  document.getElementById('modal-gasto').style.display='flex';
+}
+function guardarGasto(){
+  const nombre = document.getElementById('gasto-nombre').value.trim();
+  const monto  = parseFloat(document.getElementById('gasto-monto').value)||0;
+  if(!nombre||!monto){ showToast('Completa nombre y monto','error'); return; }
+  const fin = getFinanzas();
+  fin.gastosFijos = fin.gastosFijos||[];
+  fin.gastosFijos.push({id:'g'+Date.now(),nombre,monto});
+  setFinanzas(fin);
+  document.getElementById('modal-gasto').style.display='none';
+  renderFinanzas();
+  showToast('✓ Gasto agregado','success');
+}
+function eliminarGasto(id){
+  if(!confirm('¿Eliminar este gasto?')) return;
+  const fin = getFinanzas();
+  fin.gastosFijos = (fin.gastosFijos||[]).filter(g=>g.id!==id);
+  setFinanzas(fin);
+  renderFinanzas();
+}
+
+// ══════════════════════════════════════════════
+//  INVENTARIO
+// ══════════════════════════════════════════════
+function renderInventario(){
+  const inv = getInventario();
+  const grid  = document.getElementById('inv-grid');
+  const tbody = document.getElementById('inv-tbody');
+  const total = inv.reduce((s,i)=>s+i.cantidad,0);
+  document.getElementById('inv-resumen').textContent = inv.length+' referencias · '+total+' unidades';
+
+  // Cards
+  if(inv.length===0){
+    grid.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--text-muted);font-size:14px;">Sin referencias. Agrega tu primera.</div>';
+  } else {
+    grid.innerHTML = inv.map(i=>{
+      const qcls = i.cantidad===0?'zero':i.cantidad<=3?'low':'';
+      return `<div class="inv-card">
+        <div class="inv-cat">${i.cat}</div>
+        <div class="inv-ref">${i.ref}</div>
+        <div style="font-size:12px;color:var(--text-muted);margin-bottom:8px;">${i.desc||''}</div>
+        <div class="inv-qty ${qcls}">${i.cantidad}</div>
+        <div style="font-size:10px;color:var(--text-muted);margin-top:2px;">unidades</div>
+        <div class="inv-actions">
+          <button class="inv-btn" onclick="ajustarQty('${i.id}',-1)">−</button>
+          <button class="inv-btn" onclick="ajustarQty('${i.id}',1)">+</button>
+          <button class="inv-btn" onclick="editarItem('${i.id}')">✏️</button>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  // Tabla
+  tbody.innerHTML = inv.length===0
+    ? '<tr><td colspan="8" style="text-align:center;color:var(--text-muted);padding:24px;">Sin referencias</td></tr>'
+    : inv.map(i=>`<tr>
+        <td><strong>${i.ref}</strong></td>
+        <td>${i.desc||'—'}</td>
+        <td><span class="badge">${i.cat}</span></td>
+        <td class="mono">${i.cantidad}</td>
+        <td class="mono">${fmt(i.costoUnit||0)}</td>
+        <td class="mono">${fmt(i.pvUnit||0)}</td>
+        <td class="mono positive">${fmt((i.costoUnit||0)*i.cantidad)}</td>
+        <td><button class="btn btn-secondary btn-sm" onclick="eliminarItem('${i.id}')">Eliminar</button></td>
+      </tr>`).join('');
+}
+
+let invEditId = null;
+function abrirModalInventario(id){
+  invEditId = id||null;
+  document.getElementById('inv-modal-titulo').textContent = id?'Editar Referencia':'Nueva Referencia';
+  if(id){
+    const item = getInventario().find(i=>i.id===id);
+    if(!item) return;
+    document.getElementById('inv-ref').value   = item.ref;
+    document.getElementById('inv-desc').value  = item.desc||'';
+    document.getElementById('inv-cat').value   = item.cat;
+    document.getElementById('inv-qty').value   = item.cantidad;
+    document.getElementById('inv-costo').value = item.costoUnit||0;
+    document.getElementById('inv-pv').value    = item.pvUnit||0;
+  } else {
+    ['inv-ref','inv-desc','inv-qty','inv-costo','inv-pv'].forEach(f=>document.getElementById(f).value='');
+    document.getElementById('inv-cat').value='TWIN STRAP';
+  }
+  document.getElementById('modal-inventario').style.display='flex';
+}
+function editarItem(id){ abrirModalInventario(id); }
+function guardarInventario(){
+  const ref  = document.getElementById('inv-ref').value.trim();
+  const desc = document.getElementById('inv-desc').value.trim();
+  const cat  = document.getElementById('inv-cat').value;
+  const qty  = parseInt(document.getElementById('inv-qty').value)||0;
+  const cost = parseFloat(document.getElementById('inv-costo').value)||0;
+  const pv   = parseFloat(document.getElementById('inv-pv').value)||0;
+  if(!ref){ showToast('Ingresa una referencia','error'); return; }
+  const inv = getInventario();
+  if(invEditId){
+    const idx = inv.findIndex(i=>i.id===invEditId);
+    if(idx>=0) inv[idx] = {...inv[idx],ref,desc,cat,cantidad:qty,costoUnit:cost,pvUnit:pv};
+  } else {
+    inv.push({id:'i'+Date.now(),ref,desc,cat,cantidad:qty,costoUnit:cost,pvUnit:pv});
+  }
+  setInventario(inv);
+  document.getElementById('modal-inventario').style.display='none';
+  renderInventario();
+  showToast('✓ Referencia guardada','success');
+}
+function ajustarQty(id, delta){
+  const inv = getInventario();
+  const idx = inv.findIndex(i=>i.id===id);
+  if(idx<0) return;
+  inv[idx].cantidad = Math.max(0, inv[idx].cantidad+delta);
+  setInventario(inv);
+  renderInventario();
+}
+function eliminarItem(id){
+  if(!confirm('¿Eliminar esta referencia?')) return;
+  setInventario(getInventario().filter(i=>i.id!==id));
+  renderInventario();
+}
+
+// ══════════════════════════════════════════════
+//  SOCIOS
+// ══════════════════════════════════════════════
+function renderSocios(){
+  const soc    = getSocios();
+  const ventas = getVentas();
+  const utilTotal = ventas.reduce((s,v)=>s+(v.unet||v.ubr||0),0);
+  const yaRepartido = (soc.repartos||[]).reduce((s,r)=>s+r.monto,0);
+  const disponible  = Math.max(0, utilTotal - yaRepartido);
+
+  // Nombres
+  const n1 = soc.nombres[0]||'Socio 1';
+  const n2 = soc.nombres[1]||'Socio 2';
+  document.getElementById('soc1-nombre').textContent = n1;
+  document.getElementById('soc2-nombre').textContent = n2;
+  document.getElementById('soc1-avatar').textContent = n1.charAt(0).toUpperCase();
+  document.getElementById('soc2-avatar').textContent = n2.charAt(0).toUpperCase();
+  document.getElementById('soc1-monto').textContent  = fmt(disponible*0.5);
+  document.getElementById('soc2-monto').textContent  = fmt(disponible*0.5);
+  document.getElementById('soc1-input').value = n1;
+  document.getElementById('soc2-input').value = n2;
+
+  // Totales
+  document.getElementById('soc-utilidad-total').textContent = fmt(utilTotal);
+  document.getElementById('soc-ya-repartido').textContent   = fmt(yaRepartido);
+  document.getElementById('soc-disponible').textContent     = fmt(disponible);
+
+  // Historial
+  const tbody = document.getElementById('socios-tbody');
+  tbody.innerHTML = (soc.repartos||[]).length===0
+    ? '<tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:24px;">Sin repartos registrados</td></tr>'
+    : [...(soc.repartos||[])].reverse().map(r=>`<tr>
+        <td>${r.fecha}</td>
+        <td class="mono positive">${fmt(r.monto)}</td>
+        <td class="mono">${fmt(r.monto*0.5)}</td>
+        <td class="mono">${fmt(r.monto*0.5)}</td>
+        <td class="muted">${r.notas||'—'}</td>
+        <td><button class="btn btn-secondary btn-sm" onclick="eliminarReparto('${r.id}')">Eliminar</button></td>
+      </tr>`).join('');
+}
+
+function guardarNombresSocios(){
+  const soc = getSocios();
+  soc.nombres[0] = document.getElementById('soc1-input').value||'Socio 1';
+  soc.nombres[1] = document.getElementById('soc2-input').value||'Socio 2';
+  setSocios(soc);
+  renderSocios();
+}
+
+function abrirModalReparto(){
+  document.getElementById('rep-fecha').value = new Date().toISOString().split('T')[0];
+  document.getElementById('rep-monto').value = '';
+  document.getElementById('rep-notas').value = '';
+  document.getElementById('rep-preview').style.display='none';
+  const soc = getSocios();
+  document.getElementById('rep-soc1-nombre').textContent = soc.nombres[0]||'Socio 1';
+  document.getElementById('rep-soc2-nombre').textContent = soc.nombres[1]||'Socio 2';
+  document.getElementById('modal-reparto').style.display='flex';
+}
+function previewReparto(){
+  const m = parseFloat(document.getElementById('rep-monto').value)||0;
+  const prev = document.getElementById('rep-preview');
+  if(m>0){
+    prev.style.display='block';
+    document.getElementById('rep-soc1-val').textContent = fmt(m*0.5);
+    document.getElementById('rep-soc2-val').textContent = fmt(m*0.5);
+  } else {
+    prev.style.display='none';
+  }
+}
+function guardarReparto(){
+  const fecha = document.getElementById('rep-fecha').value;
+  const monto = parseFloat(document.getElementById('rep-monto').value)||0;
+  const notas = document.getElementById('rep-notas').value.trim();
+  if(!fecha||!monto){ showToast('Completa fecha y monto','error'); return; }
+  const soc = getSocios();
+  soc.repartos = soc.repartos||[];
+  soc.repartos.push({id:'r'+Date.now(),fecha,monto,notas});
+  setSocios(soc);
+  document.getElementById('modal-reparto').style.display='none';
+  renderSocios();
+  showToast('✓ Reparto registrado','success');
+}
+function eliminarReparto(id){
+  if(!confirm('¿Eliminar este reparto?')) return;
+  const soc = getSocios();
+  soc.repartos = (soc.repartos||[]).filter(r=>r.id!==id);
+  setSocios(soc);
+  renderSocios();
+}
 
 // ══════════════════════════════════════════════
 //  TOAST
