@@ -153,6 +153,18 @@ select.form-control{background-image:url("data:image/svg+xml,%3Csvg xmlns='http:
   .mb-val{font-size:22px;}
   .hdr-actions .hdr-btn span{display:none;}
 }
+
+/* TAREAS */
+.urg-badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700;letter-spacing:.3px;}
+.urg-alta{background:#fdf0ef;color:#b03a2e;}
+.urg-media{background:#fef9e7;color:#d68910;}
+.urg-baja{background:#eaf9f0;color:#1a8a45;}
+.est-badge{display:inline-block;padding:3px 9px;border-radius:10px;font-size:10px;font-weight:600;}
+.est-no{background:#f0f0f0;color:#888;}
+.est-prog{background:#fff3e0;color:#e67e22;}
+.est-done{background:#eaf9f0;color:#1a8a45;}
+.charts-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px;}
+.chart-pie-wrap{position:relative;height:130px;}
 </style>
 </head>
 <body>
@@ -171,6 +183,7 @@ select.form-control{background-image:url("data:image/svg+xml,%3Csvg xmlns='http:
     <div class="sb-item" onclick="navTo('finanzas')"><span class="sb-icon">💰</span>Finanzas</div>
     <div class="sb-item" onclick="navTo('inventario')"><span class="sb-icon">🗃️</span>Inventario</div>
     <div class="sb-item" onclick="navTo('socios')"><span class="sb-icon">🤝</span>Socios</div>
+    <div class="sb-item" onclick="navTo('tareas')"><span class="sb-icon">✅</span>Tareas</div>
   </div>
 </div>
 <div id="overlay" onclick="closeSidebar()"></div>
@@ -536,6 +549,57 @@ select.form-control{background-image:url("data:image/svg+xml,%3Csvg xmlns='http:
   <div id="lista-repartos"></div>
 </div>
 
+<!-- TAREAS -->
+<div class="sec" id="sec-tareas">
+  <div class="sec-hdr">
+    <div class="sec-title">Tareas</div>
+    <button class="btn btn-primary btn-sm" onclick="openTareaModal()">+ Nueva</button>
+  </div>
+
+  <!-- KPIs -->
+  <div class="kpi-grid" style="grid-template-columns:1fr 1fr 1fr;margin-bottom:12px;">
+    <div class="kpi-card">
+      <div class="kpi-label">Total</div>
+      <div class="kpi-value" id="tar-total">0</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Completadas</div>
+      <div class="kpi-value green" id="tar-done">0</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Pendientes</div>
+      <div class="kpi-value red" id="tar-pend">0</div>
+    </div>
+  </div>
+
+  <!-- 3 Pie charts -->
+  <div class="charts-row">
+    <div class="card" style="margin-bottom:0;padding:12px;">
+      <div style="font-size:10px;font-weight:700;color:var(--sub);text-align:center;margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px;">Urgencia</div>
+      <div class="chart-pie-wrap"><canvas id="chart-tar-urg"></canvas></div>
+    </div>
+    <div class="card" style="margin-bottom:0;padding:12px;">
+      <div style="font-size:10px;font-weight:700;color:var(--sub);text-align:center;margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px;">Responsable</div>
+      <div class="chart-pie-wrap"><canvas id="chart-tar-resp"></canvas></div>
+    </div>
+    <div class="card" style="margin-bottom:0;padding:12px;">
+      <div style="font-size:10px;font-weight:700;color:var(--sub);text-align:center;margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px;">Estado</div>
+      <div class="chart-pie-wrap"><canvas id="chart-tar-est"></canvas></div>
+    </div>
+  </div>
+  <div style="margin-bottom:12px;"></div>
+
+  <!-- Tabla -->
+  <div class="table-scroll">
+    <table style="min-width:500px;">
+      <thead>
+        <tr><th>Tarea</th><th>Responsable</th><th>Fecha</th><th>Urgencia</th><th>Estado</th><th></th></tr>
+      </thead>
+      <tbody id="tabla-tareas"></tbody>
+    </table>
+  </div>
+</div>
+
 </div><!-- /main -->
 
 <!-- MODAL SYNC -->
@@ -618,6 +682,49 @@ select.form-control{background-image:url("data:image/svg+xml,%3Csvg xmlns='http:
   </div>
 </div>
 
+<!-- MODAL TAREA -->
+<div class="modal" id="modal-tarea">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeTareaModal()">×</button>
+    <div class="modal-title">Tarea</div>
+    <input type="hidden" id="tar-edit-id" value="">
+    <div class="form-group">
+      <label class="form-label">Descripción</label>
+      <input id="tar-desc" class="form-control" type="text" placeholder="¿Qué hay que hacer?">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Responsable</label>
+      <select id="tar-resp" class="form-control">
+        <option value="Isabela">Isabela</option>
+        <option value="Jacobo">Jacobo</option>
+        <option value="Ambos">Ambos</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Fecha límite</label>
+      <input id="tar-fecha" class="form-control" type="date">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Urgencia</label>
+      <select id="tar-urg" class="form-control">
+        <option value="alta">🔴 Alta</option>
+        <option value="media" selected>🟡 Media</option>
+        <option value="baja">🟢 Baja</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Estado</label>
+      <select id="tar-est" class="form-control">
+        <option value="no_comenzado">⬜ No comenzado</option>
+        <option value="en_progreso">🔄 Trabajando en ello</option>
+        <option value="completado">✅ Completado</option>
+      </select>
+    </div>
+    <button class="btn btn-primary" onclick="guardarTarea()">Guardar</button>
+    <button class="btn btn-secondary" style="margin-top:8px;" onclick="closeTareaModal()">Cancelar</button>
+  </div>
+</div>
+
 <div id="toast"></div>
 
 <script>
@@ -692,8 +799,8 @@ function guardarSyncURL(){
 }
 
 // NAV
-const NAVS={dashboard:'Dashboard',nueva:'Nueva Venta',pedidos:'Pedidos',historial:'Historial',finanzas:'Finanzas',inventario:'Inventario',socios:'Socios'};
-const SUBS={dashboard:'Resumen general de tu negocio',nueva:'Registra una nueva venta',pedidos:'Ventas pendientes de entrega',historial:'Todas las ventas registradas',finanzas:'Inversión y punto de equilibrio',inventario:'Control de stock',socios:'Distribución 50/50'};
+const NAVS={dashboard:'Dashboard',nueva:'Nueva Venta',pedidos:'Pedidos',historial:'Historial',finanzas:'Finanzas',inventario:'Inventario',socios:'Socios',tareas:'Tareas'};
+const SUBS={dashboard:'Resumen general de tu negocio',nueva:'Registra una nueva venta',pedidos:'Ventas pendientes de entrega',historial:'Todas las ventas registradas',finanzas:'Inversión y punto de equilibrio',inventario:'Control de stock',socios:'Distribución 50/50',tareas:'Plan 25 jun – 25 jul'};
 function navTo(id){
   Object.keys(NAVS).forEach(k=>{
     document.getElementById('sec-'+k).classList.toggle('active',k===id);
@@ -708,6 +815,7 @@ function navTo(id){
   if(id==='finanzas')renderFinanzas();
   if(id==='inventario')renderInventario();
   if(id==='socios')renderSocios();
+  if(id==='tareas')renderTareas();
 }
 function toggleSidebar(){document.getElementById('sidebar').classList.toggle('open');document.getElementById('overlay').classList.toggle('show');}
 function closeSidebar(){document.getElementById('sidebar').classList.remove('open');document.getElementById('overlay').classList.remove('show');}
@@ -1170,6 +1278,96 @@ function guardarReparto(){
   setSocios(soc);closeRepartoModal();renderSocios();showToast('✓ Reparto registrado','ok');
 }
 function eliminarReparto(i){const soc=getSocios();soc.repartos.splice(i,1);setSocios(soc);renderSocios();showToast('Eliminado','');}
+
+// TAREAS
+const TAREAS_KEY='isbe_tareas_v1';
+let chartTarUrg=null,chartTarResp=null,chartTarEst=null;
+const TAREAS_DEFAULT=[
+  {id:1,tarea:'Idear y definir diseños para la feria',responsable:'Isabela',fecha:'2026-07-15',estado:'no_comenzado',urgencia:'alta'},
+  {id:2,tarea:'Diseñar el stand (distribución, visual, materiales)',responsable:'Isabela',fecha:'2026-07-15',estado:'no_comenzado',urgencia:'alta'},
+  {id:3,tarea:'Coordinar pedido con proveedor (antes del 15 jul)',responsable:'Isabela',fecha:'2026-07-15',estado:'no_comenzado',urgencia:'alta'},
+  {id:4,tarea:'Publicar contenido de stock (mín. 4 posts/semana)',responsable:'Isabela',fecha:'2026-07-25',estado:'no_comenzado',urgencia:'media'},
+  {id:5,tarea:'Stories con productos disponibles y CTA claro',responsable:'Isabela',fecha:'2026-07-25',estado:'no_comenzado',urgencia:'media'},
+  {id:6,tarea:'Reactivar clientes anteriores por DM',responsable:'Isabela',fecha:'2026-07-25',estado:'no_comenzado',urgencia:'media'},
+  {id:7,tarea:'Definir unidades y referencias para la feria',responsable:'Jacobo',fecha:'2026-07-15',estado:'no_comenzado',urgencia:'alta'},
+  {id:8,tarea:'Cotizar materiales y costos del stand',responsable:'Jacobo',fecha:'2026-07-10',estado:'no_comenzado',urgencia:'alta'},
+  {id:9,tarea:'Confirmar pedido al proveedor (antes del 15 jul)',responsable:'Jacobo',fecha:'2026-07-15',estado:'no_comenzado',urgencia:'alta'},
+  {id:10,tarea:'Responder DMs diariamente (máx. 24h)',responsable:'Jacobo',fecha:'2026-07-25',estado:'no_comenzado',urgencia:'media'},
+  {id:11,tarea:'Seguimiento a clientes que no compraron',responsable:'Jacobo',fecha:'2026-07-25',estado:'no_comenzado',urgencia:'media'},
+  {id:12,tarea:'Trackear stock y caja semanalmente',responsable:'Jacobo',fecha:'2026-07-25',estado:'no_comenzado',urgencia:'media'},
+];
+function getTareas(){try{const d=JSON.parse(localStorage.getItem(TAREAS_KEY));return d&&d.length?d:TAREAS_DEFAULT.map(t=>({...t}));}catch{return TAREAS_DEFAULT.map(t=>({...t}));}}
+function setTareas(t){localStorage.setItem(TAREAS_KEY,JSON.stringify(t));}
+
+function renderTareas(){
+  const tareas=getTareas();
+  const done=tareas.filter(t=>t.estado==='completado').length;
+  document.getElementById('tar-total').textContent=tareas.length;
+  document.getElementById('tar-done').textContent=done;
+  document.getElementById('tar-pend').textContent=tareas.length-done;
+
+  // Pie 1 — Urgencia
+  const urgC={alta:0,media:0,baja:0};
+  tareas.forEach(t=>urgC[t.urgencia]=(urgC[t.urgencia]||0)+1);
+  if(chartTarUrg)chartTarUrg.destroy();
+  chartTarUrg=new Chart(document.getElementById('chart-tar-urg').getContext('2d'),{type:'doughnut',data:{labels:['Alta','Media','Baja'],datasets:[{data:[urgC.alta,urgC.media,urgC.baja],backgroundColor:['#b03a2e','#f39c12','#1a8a45'],borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:9},boxWidth:10,padding:6}}}}});
+
+  // Pie 2 — Responsable
+  const respC={};
+  tareas.forEach(t=>respC[t.responsable]=(respC[t.responsable]||0)+1);
+  if(chartTarResp)chartTarResp.destroy();
+  chartTarResp=new Chart(document.getElementById('chart-tar-resp').getContext('2d'),{type:'doughnut',data:{labels:Object.keys(respC),datasets:[{data:Object.values(respC),backgroundColor:['#b03a2e','#2c3e50','#8e44ad'],borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:9},boxWidth:10,padding:6}}}}});
+
+  // Pie 3 — Estado
+  const estC={no_comenzado:0,en_progreso:0,completado:0};
+  tareas.forEach(t=>estC[t.estado]=(estC[t.estado]||0)+1);
+  if(chartTarEst)chartTarEst.destroy();
+  chartTarEst=new Chart(document.getElementById('chart-tar-est').getContext('2d'),{type:'doughnut',data:{labels:['No iniciado','En progreso','Completado'],datasets:[{data:[estC.no_comenzado,estC.en_progreso,estC.completado],backgroundColor:['#ddd','#f39c12','#1a8a45'],borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:9},boxWidth:10,padding:6}}}}});
+
+  // Tabla
+  const urgOrd={alta:0,media:1,baja:2},estOrd={no_comenzado:0,en_progreso:1,completado:2};
+  const sorted=[...tareas].sort((a,b)=>estOrd[a.estado]-estOrd[b.estado]||urgOrd[a.urgencia]-urgOrd[b.urgencia]);
+  document.getElementById('tabla-tareas').innerHTML=sorted.map(t=>{
+    const urgLabel={alta:'Alta',media:'Media',baja:'Baja'}[t.urgencia]||'';
+    const estLabel={no_comenzado:'No iniciado',en_progreso:'En progreso',completado:'Completado'}[t.estado]||'';
+    const fechaFmt=t.fecha?new Date(t.fecha+'T12:00:00').toLocaleDateString('es-CO',{day:'numeric',month:'short'}):'–';
+    const isDone=t.estado==='completado';
+    return `<tr style="${isDone?'opacity:.5;':''}">
+      <td><div style="font-size:13px;font-weight:${isDone?'400':'600'};${isDone?'text-decoration:line-through;color:#aaa;':''}">${t.tarea}</div></td>
+      <td><span style="font-size:12px;font-weight:600;color:${t.responsable==='Isabela'?'var(--red)':'#2c3e50'};">${t.responsable}</span></td>
+      <td style="white-space:nowrap;font-size:12px;">${fechaFmt}</td>
+      <td><span class="urg-badge urg-${t.urgencia}">${urgLabel}</span></td>
+      <td><span class="est-badge est-${t.estado==='no_comenzado'?'no':t.estado==='en_progreso'?'prog':'done'}">${estLabel}</span></td>
+      <td><button onclick="editarTarea(${t.id})" style="background:none;border:none;color:#aaa;cursor:pointer;font-size:16px;">✏️</button></td>
+    </tr>`;
+  }).join('')||`<tr><td colspan="6" style="text-align:center;color:#aaa;padding:24px;">Sin tareas</td></tr>`;
+}
+
+function openTareaModal(id){
+  document.getElementById('tar-edit-id').value=id||'';
+  if(id){
+    const t=getTareas().find(x=>x.id===id);
+    if(t){document.getElementById('tar-desc').value=t.tarea;document.getElementById('tar-resp').value=t.responsable;document.getElementById('tar-fecha').value=t.fecha;document.getElementById('tar-urg').value=t.urgencia;document.getElementById('tar-est').value=t.estado;}
+  } else {
+    document.getElementById('tar-desc').value='';document.getElementById('tar-resp').value='Isabela';document.getElementById('tar-fecha').value='';document.getElementById('tar-urg').value='media';document.getElementById('tar-est').value='no_comenzado';
+  }
+  document.getElementById('modal-tarea').classList.add('show');
+}
+function closeTareaModal(){document.getElementById('modal-tarea').classList.remove('show');}
+function editarTarea(id){openTareaModal(id);}
+function guardarTarea(){
+  const tarea=document.getElementById('tar-desc').value.trim();
+  if(!tarea){showToast('Escribe la descripción','err');return;}
+  const tareas=getTareas();
+  const idVal=document.getElementById('tar-edit-id').value;
+  if(idVal){
+    const idx=tareas.findIndex(t=>t.id===parseInt(idVal));
+    if(idx>=0)tareas[idx]={...tareas[idx],tarea,responsable:document.getElementById('tar-resp').value,fecha:document.getElementById('tar-fecha').value,urgencia:document.getElementById('tar-urg').value,estado:document.getElementById('tar-est').value};
+  } else {
+    tareas.push({id:Date.now(),tarea,responsable:document.getElementById('tar-resp').value,fecha:document.getElementById('tar-fecha').value,urgencia:document.getElementById('tar-urg').value,estado:document.getElementById('tar-est').value});
+  }
+  setTareas(tareas);closeTareaModal();renderTareas();showToast('✓ Tarea guardada','ok');
+}
 
 // IMPORT / EXPORT
 function importarDatos(){
