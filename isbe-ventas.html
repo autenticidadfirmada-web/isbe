@@ -112,7 +112,7 @@ td.positive{color:#16A34A;font-weight:600;} td.negative{color:var(--red);font-we
 .form-group.full{grid-column:1/-1;}
 .form-section-title{font-size:12px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;padding:16px 0 8px;border-bottom:1px solid var(--border);margin-bottom:16px;grid-column:1/-1;}
 label{font-size:12px;font-weight:600;color:var(--text);letter-spacing:.3px;}
-input,select,textarea{padding:10px 14px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:'Inter',sans-serif;color:var(--text);background:var(--white);transition:border-color .15s;outline:none;}
+input,select,textarea{padding:10px 14px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:'Inter',sans-serif;color:var(--text);background:var(--white);transition:border-color .15s;outline:none;user-select:text;-webkit-user-select:text;}
 input:focus,select:focus,textarea:focus{border-color:var(--red);box-shadow:0 0 0 3px rgba(193,57,43,.08);}
 .form-hint{font-size:11px;color:var(--text-muted);}
 input[disabled]{background:var(--bg);color:var(--text-muted);}
@@ -610,10 +610,11 @@ input[disabled]{background:var(--bg);color:var(--text-muted);}
         </div>
         <button class="btn btn-primary" onclick="abrirModalReparto()">Registrar reparto</button>
       </div>
-      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;padding-top:4px;">
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;padding-top:4px;grid-template-rows:auto auto;">
         <div><div style="font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px;">Utilidad Total</div><div style="font-size:22px;font-weight:700;color:#16A34A;" id="soc-utilidad-total">$0</div></div>
         <div><div style="font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px;">Ya Repartido</div><div style="font-size:22px;font-weight:700;" id="soc-ya-repartido">$0</div></div>
-        <div><div style="font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px;">Disponible</div><div style="font-size:22px;font-weight:700;color:var(--red);" id="soc-disponible">$0</div></div>
+        <div><div style="font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px;">Fondo Reserva</div><div style="font-size:22px;font-weight:700;color:#D97706;">$2.000.000</div></div>
+        <div style="grid-column:1/-1;border-top:1px solid var(--border);padding-top:12px;margin-top:4px;display:flex;align-items:center;justify-content:space-between;"><div><div style="font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px;">Disponible para repartir</div><div style="font-size:26px;font-weight:700;color:var(--red);" id="soc-disponible">$0</div></div><div style="font-size:12px;color:var(--text-muted);text-align:right;">Descontando $2M<br>de fondo de reserva</div></div>
       </div>
     </div>
     <div class="card">
@@ -1607,9 +1608,10 @@ function eliminarItem(id){
 function renderSocios(){
   const soc    = getSocios();
   const ventas = getVentas();
-  const utilTotal = ventas.reduce((s,v)=>s+(v.unet||v.ubr||0),0);
-  const yaRepartido = (soc.repartos||[]).reduce((s,r)=>s+r.monto,0);
-  const disponible  = Math.max(0, utilTotal - yaRepartido);
+  const RESERVA = 2000000;
+  const utilTotal    = ventas.reduce((s,v)=>s+(v.unet||v.ubr||0),0);
+  const yaRepartido  = (soc.repartos||[]).reduce((s,r)=>s+r.monto,0);
+  const disponible   = Math.max(0, utilTotal - yaRepartido - RESERVA);
 
   // Nombres
   const n1 = soc.nombres[0]||'Socio 1';
