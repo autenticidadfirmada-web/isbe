@@ -1647,10 +1647,18 @@ function renderSocios(){
 
 function guardarNombresSocios(){
   const soc = getSocios();
-  soc.nombres[0] = document.getElementById('soc1-input').value||'Socio 1';
-  soc.nombres[1] = document.getElementById('soc2-input').value||'Socio 2';
+  const n1 = document.getElementById('soc1-input').value||'Socio 1';
+  const n2 = document.getElementById('soc2-input').value||'Socio 2';
+  soc.nombres[0] = n1;
+  soc.nombres[1] = n2;
   setSocios(soc);
-  renderSocios();
+  // Solo actualiza los textos visibles sin re-renderizar los inputs
+  document.getElementById('soc1-nombre').textContent = n1;
+  document.getElementById('soc2-nombre').textContent = n2;
+  document.getElementById('soc1-avatar').textContent = n1.charAt(0).toUpperCase();
+  document.getElementById('soc2-avatar').textContent = n2.charAt(0).toUpperCase();
+  document.getElementById('rep-soc1-nombre').textContent = n1;
+  document.getElementById('rep-soc2-nombre').textContent = n2;
 }
 
 function abrirModalReparto(){
