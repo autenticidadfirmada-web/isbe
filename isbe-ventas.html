@@ -113,7 +113,7 @@ td.positive{color:#16A34A;font-weight:600;} td.negative{color:var(--red);font-we
 .form-group.full{grid-column:1/-1;}
 .form-section-title{font-size:12px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;padding:16px 0 8px;border-bottom:1px solid var(--border);margin-bottom:16px;grid-column:1/-1;}
 label{font-size:12px;font-weight:600;color:var(--text);letter-spacing:.3px;}
-input,select,textarea{padding:10px 14px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:'Inter',sans-serif;color:var(--text);background:var(--white);transition:border-color .15s;outline:none;user-select:text;-webkit-user-select:text;}
+input,select,textarea{padding:10px 14px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:'Inter',sans-serif;color:var(--text);background:var(--white);transition:border-color .15s;outline:none;user-select:text;-webkit-user-select:text;-webkit-appearance:none;touch-action:manipulation;}
 input:focus,select:focus,textarea:focus{border-color:var(--red);box-shadow:0 0 0 3px rgba(193,57,43,.08);}
 .form-hint{font-size:11px;color:var(--text-muted);}
 input[disabled]{background:var(--bg);color:var(--text-muted);}
@@ -434,7 +434,7 @@ input[disabled]{background:var(--bg);color:var(--text-muted);}
           </div>
           <div class="form-group">
             <label>Cantidad *</label>
-            <input type="text" inputmode="numeric" pattern="[0-9]*" id="f-cant" min="1" placeholder="0" required oninput="calcularPreview()">
+            <input type="text" inputmode="numeric" id="f-cant" placeholder="0" required oninput="calcularPreview()">
           </div>
         </div>
         <div class="form-group full" style="margin-bottom:20px;">
@@ -449,27 +449,27 @@ input[disabled]{background:var(--bg);color:var(--text-muted);}
         <div class="form-grid three" style="margin-bottom:20px;">
           <div class="form-group">
             <label>Precio de Venta (unit) *</label>
-            <input type="text" inputmode="numeric" pattern="[0-9]*" id="f-pventa" min="0" step="0.01" placeholder="$0" required oninput="calcularPreview()">
+            <input type="text" inputmode="numeric" id="f-pventa" placeholder="$0" required oninput="calcularPreview()">
           </div>
           <div class="form-group">
             <label>Domicilio al Cliente</label>
-            <input type="text" inputmode="numeric" pattern="[0-9]*" id="f-domicilio" min="0" step="1" placeholder="$0" oninput="calcularPreview()" id="f-domicilio">
+            <input type="text" inputmode="numeric" id="f-domicilio" placeholder="$0" oninput="calcularPreview()" id="f-domicilio">
             <span class="form-hint" id="dom-hint">Se llena automático con la ciudad</span>
           </div>
           <div class="form-group">
             <label>Precio de Producción (unit) *</label>
-            <input type="text" inputmode="numeric" pattern="[0-9]*" id="f-pprod" min="0" step="0.01" placeholder="$0" required oninput="calcularPreview()">
+            <input type="text" inputmode="numeric" id="f-pprod" placeholder="$0" required oninput="calcularPreview()">
           </div>
         </div>
         <div class="form-grid three" style="margin-bottom:20px;">
           <div class="form-group">
             <label>Transporte de Producción</label>
-            <input type="text" inputmode="numeric" pattern="[0-9]*" id="f-transp" min="0" step="0.01" placeholder="$0" oninput="calcularPreview()">
+            <input type="text" inputmode="numeric" id="f-transp" placeholder="$0" oninput="calcularPreview()">
             <span class="form-hint">Flete de materia prima</span>
           </div>
           <div class="form-group">
             <label>Gastos Adicionales</label>
-            <input type="text" inputmode="numeric" pattern="[0-9]*" id="f-gastos" min="0" step="0.01" placeholder="$0" oninput="calcularPreview()">
+            <input type="text" inputmode="numeric" id="f-gastos" placeholder="$0" oninput="calcularPreview()">
             <span class="form-hint">Empaque, comisiones, otros</span>
           </div>
           <div class="form-group">
@@ -678,7 +678,7 @@ input[disabled]{background:var(--bg);color:var(--text-muted);}
     <div class="modal-header"><div style="font-size:16px;font-weight:700;">Gasto Fijo</div><button class="modal-close" onclick="document.getElementById('modal-gasto').style.display='none'">✕</button></div>
     <div class="modal-body" style="padding:20px;display:flex;flex-direction:column;gap:14px;">
       <div class="form-group"><label>Nombre del gasto</label><input id="gasto-nombre" type="text" placeholder="Ej: Arriendo, Internet…"></div>
-      <div class="form-group"><label>Monto mensual</label><input id="gasto-monto" type="text" inputmode="numeric" pattern="[0-9]*" placeholder="0"></div>
+      <div class="form-group"><label>Monto mensual</label><input id="gasto-monto" type="text" inputmode="numeric" placeholder="0"></div>
       <button class="btn btn-primary" onclick="guardarGasto()">Guardar</button>
     </div>
   </div>
@@ -696,9 +696,9 @@ input[disabled]{background:var(--bg);color:var(--text-muted);}
         <select id="inv-cat"><option value="TWIN STRAP">TWIN STRAP</option><option value="MAXI">MAXI</option><option value="MID">MID</option><option value="STRAP UNICO">STRAP UNICO</option><option value="ACCESORIOS">ACCESORIOS</option></select>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;">
-        <div class="form-group"><label>Cantidad</label><input id="inv-qty" type="text" inputmode="numeric" pattern="[0-9]*" min="0" placeholder="0"></div>
-        <div class="form-group"><label>Costo Unit.</label><input id="inv-costo" type="text" inputmode="numeric" pattern="[0-9]*" min="0" placeholder="0"></div>
-        <div class="form-group"><label>P. Venta</label><input id="inv-pv" type="text" inputmode="numeric" pattern="[0-9]*" min="0" placeholder="0"></div>
+        <div class="form-group"><label>Cantidad</label><input id="inv-qty" type="text" inputmode="numeric" placeholder="0"></div>
+        <div class="form-group"><label>Costo Unit.</label><input id="inv-costo" type="text" inputmode="numeric" placeholder="0"></div>
+        <div class="form-group"><label>P. Venta</label><input id="inv-pv" type="text" inputmode="numeric" placeholder="0"></div>
       </div>
       <button class="btn btn-primary" onclick="guardarInventario()">Guardar</button>
     </div>
@@ -711,7 +711,7 @@ input[disabled]{background:var(--bg);color:var(--text-muted);}
     <div class="modal-header"><div style="font-size:16px;font-weight:700;">Registrar Reparto</div><button class="modal-close" onclick="document.getElementById('modal-reparto').style.display='none'">✕</button></div>
     <div class="modal-body" style="padding:20px;display:flex;flex-direction:column;gap:14px;">
       <div class="form-group"><label>Fecha del reparto</label><input id="rep-fecha" type="date"></div>
-      <div class="form-group"><label>Utilidad a repartir</label><input id="rep-monto" type="text" inputmode="numeric" pattern="[0-9]*" placeholder="0" oninput="previewReparto()"></div>
+      <div class="form-group"><label>Utilidad a repartir</label><input id="rep-monto" type="text" inputmode="numeric" placeholder="0" oninput="previewReparto()"></div>
       <div id="rep-preview" style="background:var(--red-bg);border-radius:8px;padding:12px;font-size:13px;display:none;">
         <div style="display:flex;justify-content:space-between;margin-bottom:6px;"><span id="rep-soc1-nombre">Socio 1</span><strong id="rep-soc1-val">$0</strong></div>
         <div style="display:flex;justify-content:space-between;"><span id="rep-soc2-nombre">Socio 2</span><strong id="rep-soc2-val">$0</strong></div>
@@ -1705,6 +1705,13 @@ function showToast(msg,type=''){
   clearTimeout(toastTimer);
   toastTimer=setTimeout(()=>t.className='toast',3200);
 }
+
+// Fix iOS keyboard/input bug
+document.addEventListener('touchstart', function(){}, {passive:true});
+document.querySelectorAll('input,textarea').forEach(el=>{
+  el.addEventListener('touchstart', e=>e.stopPropagation(), {passive:true});
+  el.addEventListener('focus', function(){ this.removeAttribute('readonly'); });
+});
 </script>
 </body>
 </html>
