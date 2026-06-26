@@ -573,19 +573,19 @@ select.form-control{background-image:url("data:image/svg+xml,%3Csvg xmlns='http:
   </div>
 
   <!-- 3 Pie charts -->
-  <div class="card" style="margin-bottom:14px;">
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
-      <div>
+  <div class="card" style="margin-bottom:14px;overflow:hidden;">
+    <div style="display:flex;gap:0;">
+      <div style="flex:1;min-width:0;padding:4px;">
         <div style="font-size:10px;font-weight:700;color:var(--sub);text-align:center;margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px;">Urgencia</div>
-        <div class="chart-pie-wrap"><canvas id="chart-tar-urg"></canvas></div>
+        <div style="position:relative;height:120px;"><canvas id="chart-tar-urg"></canvas></div>
       </div>
-      <div>
+      <div style="flex:1;min-width:0;padding:4px;border-left:1px solid #f0f0f0;border-right:1px solid #f0f0f0;">
         <div style="font-size:10px;font-weight:700;color:var(--sub);text-align:center;margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px;">Responsable</div>
-        <div class="chart-pie-wrap"><canvas id="chart-tar-resp"></canvas></div>
+        <div style="position:relative;height:120px;"><canvas id="chart-tar-resp"></canvas></div>
       </div>
-      <div>
+      <div style="flex:1;min-width:0;padding:4px;">
         <div style="font-size:10px;font-weight:700;color:var(--sub);text-align:center;margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px;">Estado</div>
-        <div class="chart-pie-wrap"><canvas id="chart-tar-est"></canvas></div>
+        <div style="position:relative;height:120px;"><canvas id="chart-tar-est"></canvas></div>
       </div>
     </div>
   </div>
@@ -1304,21 +1304,21 @@ function renderTareas(){
   const urgC={alta:0,media:0,baja:0};
   tareas.forEach(t=>urgC[t.urgencia]=(urgC[t.urgencia]||0)+1);
   if(chartTarUrg)chartTarUrg.destroy();
-  chartTarUrg=new Chart(document.getElementById('chart-tar-urg').getContext('2d'),{type:'doughnut',data:{labels:['Alta','Media','Baja'],datasets:[{data:[urgC.alta,urgC.media,urgC.baja],backgroundColor:['#b03a2e','#c97d60','#e8c5b8'],borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:9},boxWidth:10,padding:6}}}}});
+  chartTarUrg=new Chart(document.getElementById('chart-tar-urg').getContext('2d'),{type:'doughnut',data:{labels:['Alta','Media','Baja'],datasets:[{data:[urgC.alta,urgC.media,urgC.baja],backgroundColor:['#7D2027','#CF5527','#FAE3B1'],borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:9},boxWidth:10,padding:6}}}}});
 
   // Pie 2 — Responsable
   const respC={};
   tareas.forEach(t=>respC[t.responsable]=(respC[t.responsable]||0)+1);
   if(chartTarResp)chartTarResp.destroy();
   const respLabels=Object.keys(respC);
-  const respColors=respLabels.map(l=>l==='Isabella'?'#b03a2e':l==='Jacobo'?'#2c3e50':'#8fa3b1');
+  const respColors=respLabels.map(l=>l==='Isabella'?'#7D2027':l==='Jacobo'?'#5FA8C2':'#998731');
   chartTarResp=new Chart(document.getElementById('chart-tar-resp').getContext('2d'),{type:'doughnut',data:{labels:respLabels,datasets:[{data:Object.values(respC),backgroundColor:respColors,borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:9},boxWidth:10,padding:6}}}}});
 
   // Pie 3 — Estado
   const estC={no_comenzado:0,en_progreso:0,completado:0};
   tareas.forEach(t=>estC[t.estado]=(estC[t.estado]||0)+1);
   if(chartTarEst)chartTarEst.destroy();
-  chartTarEst=new Chart(document.getElementById('chart-tar-est').getContext('2d'),{type:'doughnut',data:{labels:['No iniciado','En progreso','Completado'],datasets:[{data:[estC.no_comenzado,estC.en_progreso,estC.completado],backgroundColor:['#e5e5ea','#c97d60','#2c3e50'],borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:9},boxWidth:10,padding:6}}}}});
+  chartTarEst=new Chart(document.getElementById('chart-tar-est').getContext('2d'),{type:'doughnut',data:{labels:['No iniciado','En progreso','Completado'],datasets:[{data:[estC.no_comenzado,estC.en_progreso,estC.completado],backgroundColor:['#FAE3B1','#998731','#5FA8C2'],borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:9},boxWidth:10,padding:6}}}}});
 
   // Tarjetas tocables
   const urgOrd={alta:0,media:1,baja:2},estOrd={no_comenzado:0,en_progreso:1,completado:2};
