@@ -293,9 +293,8 @@ select.form-control{background-image:url("data:image/svg+xml,%3Csvg xmlns='http:
       <label class="form-label">Producto</label>
       <select id="f-producto" class="form-control">
         <option value="">Selecciona…</option>
-        <option>Bolso Mini</option><option>Bolso Mediano</option><option>Bolso Grande</option>
-        <option>Clutch</option><option>Mochila</option><option>Cartera</option>
-        <option>Bolso Cadena</option><option>Tote Bag</option><option>Otro</option>
+        <option>Twin Strap</option><option>Maxi</option><option>Mid</option>
+        <option>Oval Cut</option><option>Otro</option>
       </select>
     </div>
     <div class="form-group">
@@ -326,11 +325,10 @@ select.form-control{background-image:url("data:image/svg+xml,%3Csvg xmlns='http:
       <label class="form-label">Método de pago</label>
       <input id="f-pago" type="hidden" value="">
       <div class="pago-grid">
-        <div class="pago-opt" onclick="selPago('Efectivo')">💵 Efectivo</div>
-        <div class="pago-opt" onclick="selPago('Nequi')">💜 Nequi</div>
+        <div class="pago-opt" onclick="selPago('Nu')">💜 Nu</div>
         <div class="pago-opt" onclick="selPago('Bancolombia')">💛 Bancolombia</div>
-        <div class="pago-opt" onclick="selPago('Daviplata')">🔵 Daviplata</div>
-        <div class="pago-opt" onclick="selPago('Crédito')">💳 Crédito</div>
+        <div class="pago-opt" onclick="selPago('Bold')">🔵 Bold</div>
+        <div class="pago-opt" onclick="selPago('Efectivo')">💵 Efectivo</div>
         <div class="pago-opt" onclick="selPago('Otro')">🔖 Otro</div>
       </div>
     </div>
@@ -636,7 +634,7 @@ function showToast(msg,type){
 function fmt(n){return '$'+Math.round(n||0).toLocaleString('es-CO');}
 function parsePeso(s){return parseInt((s||'').replace(/\D/g,''))||0;}
 function fechaHoy(){return new Date().toISOString().split('T')[0];}
-function pagoColor(p){const m={Nequi:'#9b59b6',Bancolombia:'#f39c12',Daviplata:'#3498db',Efectivo:'#27ae60',Crédito:'#e74c3c'};return m[p]||'#888';}
+function pagoColor(p){const m={Nu:'#820ad1',Bancolombia:'#f39c12',Bold:'#1a6aff',Efectivo:'#27ae60'};return m[p]||'#888';}
 
 function populateAños(){
   const ventas=getVentas();
