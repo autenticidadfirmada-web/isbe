@@ -290,11 +290,19 @@ select.form-control{background-image:url("data:image/svg+xml,%3Csvg xmlns='http:
   <div class="sec-hdr"><div class="sec-title">Nueva Venta</div></div>
   <div class="card">
     <div class="form-group">
-      <label class="form-label">Producto</label>
+      <label class="form-label">Referencia</label>
       <select id="f-producto" class="form-control">
         <option value="">Selecciona…</option>
         <option>Twin Strap</option><option>Maxi</option><option>Mid</option>
-        <option>Oval Cut</option><option>Otro</option>
+        <option>Oval Cut</option><option>Strap Solo</option><option>Otro</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Color</label>
+      <select id="f-color" class="form-control">
+        <option value="">Selecciona…</option>
+        <option>Café Creme</option><option>Noir Snow</option><option>Cocoa Burnt</option>
+        <option>Rouge</option><option>Onyx</option><option>Dirty Gray</option><option>Sage</option>
       </select>
     </div>
     <div class="form-group">
@@ -564,9 +572,21 @@ select.form-control{background-image:url("data:image/svg+xml,%3Csvg xmlns='http:
     <button class="modal-close" onclick="closeInvModal()">×</button>
     <div class="modal-title">Producto</div>
     <input type="hidden" id="inv-edit-idx" value="-1">
-    <div class="form-group"><label class="form-label">Nombre</label><input id="inv-nombre" class="form-control" type="text" placeholder="Ej: Bolso Mini Negro"></div>
+    <div class="form-group"><label class="form-label">Referencia</label>
+      <select id="inv-nombre" class="form-control">
+        <option value="">Selecciona…</option>
+        <option>Twin Strap</option><option>Maxi</option><option>Mid</option>
+        <option>Oval Cut</option><option>Strap Solo</option><option>Otro</option>
+      </select>
+    </div>
+    <div class="form-group"><label class="form-label">Color</label>
+      <select id="inv-color" class="form-control">
+        <option value="">Selecciona…</option>
+        <option>Café Creme</option><option>Noir Snow</option><option>Cocoa Burnt</option>
+        <option>Rouge</option><option>Onyx</option><option>Dirty Gray</option><option>Sage</option>
+      </select>
+    </div>
     <div class="form-group"><label class="form-label">Cantidad en stock</label><input id="inv-qty" class="form-control" type="text" inputmode="numeric" placeholder="0"></div>
-    <div class="form-group"><label class="form-label">Unidad</label><select id="inv-unidad" class="form-control"><option>und</option><option>pares</option><option>kg</option><option>m</option></select></div>
     <div class="form-group"><label class="form-label">Costo unitario (opcional)</label><input id="inv-costo" class="form-control" type="text" inputmode="numeric" placeholder="0"></div>
     <button class="btn btn-primary" onclick="guardarInventario()">Guardar</button>
     <button class="btn btn-secondary" style="margin-top:8px;" onclick="closeInvModal()">Cancelar</button>
@@ -783,7 +803,7 @@ function renderDashboard(){
     const d=new Date(v.fecha+'T12:00:00');
     return `<tr>
       <td>${d.toLocaleDateString('es-CO',{day:'numeric',month:'short'})}</td>
-      <td><div style="font-weight:600;font-size:13px;">${v.producto||'-'}</div>${v.descripcion?`<div style="font-size:11px;color:#888;">${v.descripcion}</div>`:''}${v.direccion?`<div style="font-size:11px;color:#888;">📍 ${v.direccion}</div>`:''}</td>
+      <td><div style="font-weight:600;font-size:13px;">${v.producto||'-'}${v.color?` <span style="font-size:11px;color:#888;">· ${v.color}</span>`:''}</div>${v.descripcion?`<div style="font-size:11px;color:#888;">${v.descripcion}</div>`:''}${v.direccion?`<div style="font-size:11px;color:#888;">📍 ${v.direccion}</div>`:''}</td>
       <td style="font-weight:700;">${fmt(v.precio)}</td>
       <td><span style="display:inline-flex;align-items:center;gap:4px;"><span style="width:10px;height:10px;border-radius:50%;background:${pagoColor(v.pago)};display:inline-block;"></span><span style="font-size:11px;">${v.pago||'-'}</span></span></td>
       <td>${estadoBadgeHTML(v.estado)}</td>
@@ -820,6 +840,7 @@ function guardarVenta(){
   if(!precio){showToast('Ingresa el precio','err');return;}
   const venta={
     id:Date.now(),producto,
+    color:document.getElementById('f-color').value,
     descripcion:document.getElementById('f-desc').value.trim(),
     direccion:document.getElementById('f-direccion').value.trim(),
     precio,
@@ -833,6 +854,7 @@ function guardarVenta(){
   };
   const ventas=getVentas(); ventas.push(venta); setVentas(ventas);
   document.getElementById('f-producto').value='';
+  document.getElementById('f-color').value='';
   document.getElementById('f-desc').value='';
   document.getElementById('f-direccion').value='';
   document.getElementById('f-precio').value='';
@@ -1029,8 +1051,9 @@ function renderInventario(){
   document.getElementById('inv-cards').innerHTML=inv.map((p,i)=>`
     <div class="inv-card">
       <div class="inv-name">${p.nombre}</div>
+      ${p.color?`<div style="font-size:11px;color:#888;margin-bottom:4px;">${p.color}</div>`:''}
       <div class="inv-qty">${p.qty}</div>
-      <div class="inv-unit">${p.unidad||'und'}</div>
+      <div class="inv-unit">und</div>
       <div class="qty-ctrl">
         <button class="qty-btn" onclick="ajustarQty(${i},-1)">−</button>
         <span style="font-size:16px;font-weight:700;min-width:24px;text-align:center;">${p.qty}</span>
@@ -1039,23 +1062,24 @@ function renderInventario(){
     </div>`).join('')||'<div style="color:#aaa;font-size:13px;grid-column:1/-1;padding:20px;text-align:center;">Sin productos</div>';
   document.getElementById('inv-tabla').innerHTML=inv.map((p,i)=>`
     <tr>
-      <td style="font-weight:600;">${p.nombre}</td>
+      <td><div style="font-weight:600;">${p.nombre}</div>${p.color?`<div style="font-size:11px;color:#888;">${p.color}</div>`:''}</td>
       <td><strong>${p.qty}</strong></td>
-      <td>${p.unidad||'und'}</td>
+      <td>und</td>
       <td>${p.costo?fmt(p.costo):'-'}</td>
       <td><button onclick="editarInv(${i})" style="background:none;border:none;color:#888;cursor:pointer;">✏️</button> <button onclick="eliminarInv(${i})" style="background:none;border:none;color:#c0392b;cursor:pointer;">🗑️</button></td>
     </tr>`).join('');
 }
 function ajustarQty(i,d){const inv=getInventario();inv[i].qty=Math.max(0,(inv[i].qty||0)+d);setInventario(inv);renderInventario();}
-function openInvModal(){document.getElementById('inv-edit-idx').value=-1;document.getElementById('inv-nombre').value='';document.getElementById('inv-qty').value='';document.getElementById('inv-unidad').value='und';document.getElementById('inv-costo').value='';document.getElementById('modal-inventario').classList.add('show');}
+function openInvModal(){document.getElementById('inv-edit-idx').value=-1;document.getElementById('inv-nombre').value='';document.getElementById('inv-color').value='';document.getElementById('inv-qty').value='';document.getElementById('inv-costo').value='';document.getElementById('modal-inventario').classList.add('show');}
 function closeInvModal(){document.getElementById('modal-inventario').classList.remove('show');}
-function editarInv(i){const inv=getInventario();const p=inv[i];document.getElementById('inv-edit-idx').value=i;document.getElementById('inv-nombre').value=p.nombre;document.getElementById('inv-qty').value=p.qty;document.getElementById('inv-unidad').value=p.unidad||'und';document.getElementById('inv-costo').value=p.costo||'';document.getElementById('modal-inventario').classList.add('show');}
+function editarInv(i){const inv=getInventario();const p=inv[i];document.getElementById('inv-edit-idx').value=i;document.getElementById('inv-nombre').value=p.nombre||'';document.getElementById('inv-color').value=p.color||'';document.getElementById('inv-qty').value=p.qty;document.getElementById('inv-costo').value=p.costo||'';document.getElementById('modal-inventario').classList.add('show');}
 function eliminarInv(i){const inv=getInventario();inv.splice(i,1);setInventario(inv);renderInventario();}
 function guardarInventario(){
-  const nombre=document.getElementById('inv-nombre').value.trim();
-  if(!nombre){showToast('Ingresa el nombre','err');return;}
+  const nombre=document.getElementById('inv-nombre').value;
+  const color=document.getElementById('inv-color').value;
+  if(!nombre){showToast('Selecciona la referencia','err');return;}
   const inv=getInventario();const idx=parseInt(document.getElementById('inv-edit-idx').value);
-  const item={nombre,qty:parseInt(document.getElementById('inv-qty').value)||0,unidad:document.getElementById('inv-unidad').value,costo:parsePeso(document.getElementById('inv-costo').value)||0};
+  const item={nombre,color,qty:parseInt(document.getElementById('inv-qty').value)||0,costo:parsePeso(document.getElementById('inv-costo').value)||0};
   if(idx>=0)inv[idx]=item;else inv.push(item);
   setInventario(inv);closeInvModal();renderInventario();showToast('✓ Guardado','ok');
 }
