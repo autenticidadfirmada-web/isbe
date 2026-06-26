@@ -573,21 +573,22 @@ select.form-control{background-image:url("data:image/svg+xml,%3Csvg xmlns='http:
   </div>
 
   <!-- 3 Pie charts -->
-  <div class="charts-row">
-    <div class="card" style="margin-bottom:0;padding:12px;">
-      <div style="font-size:10px;font-weight:700;color:var(--sub);text-align:center;margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px;">Urgencia</div>
-      <div class="chart-pie-wrap"><canvas id="chart-tar-urg"></canvas></div>
-    </div>
-    <div class="card" style="margin-bottom:0;padding:12px;">
-      <div style="font-size:10px;font-weight:700;color:var(--sub);text-align:center;margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px;">Responsable</div>
-      <div class="chart-pie-wrap"><canvas id="chart-tar-resp"></canvas></div>
-    </div>
-    <div class="card" style="margin-bottom:0;padding:12px;">
-      <div style="font-size:10px;font-weight:700;color:var(--sub);text-align:center;margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px;">Estado</div>
-      <div class="chart-pie-wrap"><canvas id="chart-tar-est"></canvas></div>
+  <div class="card" style="margin-bottom:14px;">
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
+      <div>
+        <div style="font-size:10px;font-weight:700;color:var(--sub);text-align:center;margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px;">Urgencia</div>
+        <div class="chart-pie-wrap"><canvas id="chart-tar-urg"></canvas></div>
+      </div>
+      <div>
+        <div style="font-size:10px;font-weight:700;color:var(--sub);text-align:center;margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px;">Responsable</div>
+        <div class="chart-pie-wrap"><canvas id="chart-tar-resp"></canvas></div>
+      </div>
+      <div>
+        <div style="font-size:10px;font-weight:700;color:var(--sub);text-align:center;margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px;">Estado</div>
+        <div class="chart-pie-wrap"><canvas id="chart-tar-est"></canvas></div>
+      </div>
     </div>
   </div>
-  <div style="margin-bottom:12px;"></div>
 
   <!-- Tarjetas de tareas -->
   <div id="tabla-tareas"></div>
@@ -1303,19 +1304,21 @@ function renderTareas(){
   const urgC={alta:0,media:0,baja:0};
   tareas.forEach(t=>urgC[t.urgencia]=(urgC[t.urgencia]||0)+1);
   if(chartTarUrg)chartTarUrg.destroy();
-  chartTarUrg=new Chart(document.getElementById('chart-tar-urg').getContext('2d'),{type:'doughnut',data:{labels:['Alta','Media','Baja'],datasets:[{data:[urgC.alta,urgC.media,urgC.baja],backgroundColor:['#b03a2e','#f39c12','#1a8a45'],borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:9},boxWidth:10,padding:6}}}}});
+  chartTarUrg=new Chart(document.getElementById('chart-tar-urg').getContext('2d'),{type:'doughnut',data:{labels:['Alta','Media','Baja'],datasets:[{data:[urgC.alta,urgC.media,urgC.baja],backgroundColor:['#b03a2e','#c97d60','#e8c5b8'],borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:9},boxWidth:10,padding:6}}}}});
 
   // Pie 2 — Responsable
   const respC={};
   tareas.forEach(t=>respC[t.responsable]=(respC[t.responsable]||0)+1);
   if(chartTarResp)chartTarResp.destroy();
-  chartTarResp=new Chart(document.getElementById('chart-tar-resp').getContext('2d'),{type:'doughnut',data:{labels:Object.keys(respC),datasets:[{data:Object.values(respC),backgroundColor:['#b03a2e','#2c3e50','#8e44ad'],borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:9},boxWidth:10,padding:6}}}}});
+  const respLabels=Object.keys(respC);
+  const respColors=respLabels.map(l=>l==='Isabella'?'#b03a2e':l==='Jacobo'?'#2c3e50':'#8fa3b1');
+  chartTarResp=new Chart(document.getElementById('chart-tar-resp').getContext('2d'),{type:'doughnut',data:{labels:respLabels,datasets:[{data:Object.values(respC),backgroundColor:respColors,borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:9},boxWidth:10,padding:6}}}}});
 
   // Pie 3 — Estado
   const estC={no_comenzado:0,en_progreso:0,completado:0};
   tareas.forEach(t=>estC[t.estado]=(estC[t.estado]||0)+1);
   if(chartTarEst)chartTarEst.destroy();
-  chartTarEst=new Chart(document.getElementById('chart-tar-est').getContext('2d'),{type:'doughnut',data:{labels:['No iniciado','En progreso','Completado'],datasets:[{data:[estC.no_comenzado,estC.en_progreso,estC.completado],backgroundColor:['#ddd','#f39c12','#1a8a45'],borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:9},boxWidth:10,padding:6}}}}});
+  chartTarEst=new Chart(document.getElementById('chart-tar-est').getContext('2d'),{type:'doughnut',data:{labels:['No iniciado','En progreso','Completado'],datasets:[{data:[estC.no_comenzado,estC.en_progreso,estC.completado],backgroundColor:['#e5e5ea','#c97d60','#2c3e50'],borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:9},boxWidth:10,padding:6}}}}});
 
   // Tarjetas tocables
   const urgOrd={alta:0,media:1,baja:2},estOrd={no_comenzado:0,en_progreso:1,completado:2};
@@ -1325,9 +1328,9 @@ function renderTareas(){
   document.getElementById('tabla-tareas').innerHTML=sorted.map(t=>{
     const fechaFmt=t.fecha?new Date(t.fecha+'T12:00:00').toLocaleDateString('es-CO',{day:'numeric',month:'short'}):'–';
     const isDone=t.estado==='completado';
-    return `<div onclick="editarTarea(${t.id})" style="background:#fff;border-radius:14px;padding:14px 16px;margin-bottom:10px;box-shadow:0 1px 3px rgba(0,0,0,.06);display:flex;justify-content:space-between;align-items:center;cursor:pointer;opacity:${isDone?'.5':'1'};">
+    return `<button onclick="editarTarea(${t.id})" style="width:100%;background:#fff;border:none;border-radius:14px;padding:14px 16px;margin-bottom:10px;box-shadow:0 1px 3px rgba(0,0,0,.06);display:flex;justify-content:space-between;align-items:center;cursor:pointer;opacity:${isDone?'.5':'1'};text-align:left;">
       <div style="flex:1;min-width:0;padding-right:12px;">
-        <div style="font-size:13px;font-weight:${isDone?'400':'600'};${isDone?'text-decoration:line-through;color:#aaa;':''};margin-bottom:6px;">${t.tarea}</div>
+        <div style="font-size:13px;font-weight:${isDone?'400':'600'};${isDone?'text-decoration:line-through;color:#aaa;':'color:var(--text);'};margin-bottom:6px;">${t.tarea}</div>
         <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
           <span style="font-size:11px;font-weight:700;color:${t.responsable==='Isabella'?'var(--red)':'#2c3e50'};">${t.responsable}</span>
           <span style="color:#ddd;">·</span>
@@ -1339,7 +1342,7 @@ function renderTareas(){
       <div style="flex-shrink:0;">
         <span class="est-badge est-${t.estado==='no_comenzado'?'no':t.estado==='en_progreso'?'prog':'done'}" style="white-space:nowrap;">${estLabel[t.estado]}</span>
       </div>
-    </div>`;
+    </button>`;
   }).join('')||`<div style="text-align:center;color:#aaa;padding:44px 20px;">Sin tareas</div>`;
 }
 
