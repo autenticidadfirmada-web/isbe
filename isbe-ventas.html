@@ -1322,7 +1322,11 @@ function renderTareas(){
 
   // Tarjetas tocables
   const urgOrd={alta:0,media:1,baja:2},estOrd={no_comenzado:0,en_progreso:1,completado:2};
-  const sorted=[...tareas].sort((a,b)=>estOrd[a.estado]-estOrd[b.estado]||urgOrd[a.urgencia]-urgOrd[b.urgencia]);
+  const sorted=[...tareas].sort((a,b)=>{
+    const da=a.fecha?new Date(a.fecha):new Date('9999');
+    const db=b.fecha?new Date(b.fecha):new Date('9999');
+    return da-db||urgOrd[a.urgencia]-urgOrd[b.urgencia];
+  });
   const urgLabel={alta:'Alta',media:'Media',baja:'Baja'};
   const estLabel={no_comenzado:'⬜ No iniciado',en_progreso:'🔄 En progreso',completado:'✅ Completado'};
   document.getElementById('tabla-tareas').innerHTML=sorted.map(t=>{
