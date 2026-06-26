@@ -469,6 +469,18 @@ select.form-control{background-image:url("data:image/svg+xml,%3Csvg xmlns='http:
     <div class="sec-title">Inventario</div>
     <button class="btn btn-primary btn-sm" onclick="openInvModal()">+ Nuevo</button>
   </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;">
+    <div class="kpi-card">
+      <div class="kpi-label">Total unidades</div>
+      <div class="kpi-value red" id="inv-total-und">0</div>
+      <div class="kpi-sub">en stock</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Valor del stock</div>
+      <div class="kpi-value" id="inv-total-valor">$0</div>
+      <div class="kpi-sub">a costo unitario</div>
+    </div>
+  </div>
   <div class="inv-grid" id="inv-cards"></div>
   <div class="table-scroll">
     <table>
@@ -1048,6 +1060,10 @@ function guardarGasto(){
 // INVENTARIO
 function renderInventario(){
   const inv=getInventario();
+  const totalUnd=inv.reduce((s,p)=>s+(p.qty||0),0);
+  const totalValor=inv.reduce((s,p)=>s+((p.qty||0)*(p.costo||0)),0);
+  document.getElementById('inv-total-und').textContent=totalUnd;
+  document.getElementById('inv-total-valor').textContent=fmt(totalValor);
   document.getElementById('inv-cards').innerHTML=inv.map((p,i)=>`
     <div class="inv-card">
       <div class="inv-name">${p.nombre}</div>
