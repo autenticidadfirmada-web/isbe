@@ -695,7 +695,7 @@ select.form-control{background-image:url("data:image/svg+xml,%3Csvg xmlns='http:
     <div class="form-group">
       <label class="form-label">Responsable</label>
       <select id="tar-resp" class="form-control">
-        <option value="Isabela">Isabela</option>
+        <option value="Isabella">Isabella</option>
         <option value="Jacobo">Jacobo</option>
         <option value="Ambos">Ambos</option>
       </select>
@@ -1283,12 +1283,12 @@ function eliminarReparto(i){const soc=getSocios();soc.repartos.splice(i,1);setSo
 const TAREAS_KEY='isbe_tareas_v1';
 let chartTarUrg=null,chartTarResp=null,chartTarEst=null;
 const TAREAS_DEFAULT=[
-  {id:1,tarea:'Idear y definir diseños para la feria',responsable:'Isabela',fecha:'2026-07-15',estado:'no_comenzado',urgencia:'alta'},
-  {id:2,tarea:'Diseñar el stand (distribución, visual, materiales)',responsable:'Isabela',fecha:'2026-07-15',estado:'no_comenzado',urgencia:'alta'},
-  {id:3,tarea:'Coordinar pedido con proveedor (antes del 15 jul)',responsable:'Isabela',fecha:'2026-07-15',estado:'no_comenzado',urgencia:'alta'},
-  {id:4,tarea:'Publicar contenido de stock (mín. 4 posts/semana)',responsable:'Isabela',fecha:'2026-07-25',estado:'no_comenzado',urgencia:'media'},
-  {id:5,tarea:'Stories con productos disponibles y CTA claro',responsable:'Isabela',fecha:'2026-07-25',estado:'no_comenzado',urgencia:'media'},
-  {id:6,tarea:'Reactivar clientes anteriores por DM',responsable:'Isabela',fecha:'2026-07-25',estado:'no_comenzado',urgencia:'media'},
+  {id:1,tarea:'Idear y definir diseños para la feria',responsable:'Isabella',fecha:'2026-07-15',estado:'no_comenzado',urgencia:'alta'},
+  {id:2,tarea:'Diseñar el stand (distribución, visual, materiales)',responsable:'Isabella',fecha:'2026-07-15',estado:'no_comenzado',urgencia:'alta'},
+  {id:3,tarea:'Coordinar pedido con proveedor (antes del 15 jul)',responsable:'Isabella',fecha:'2026-07-15',estado:'no_comenzado',urgencia:'alta'},
+  {id:4,tarea:'Publicar contenido de stock (mín. 4 posts/semana)',responsable:'Isabella',fecha:'2026-07-25',estado:'no_comenzado',urgencia:'media'},
+  {id:5,tarea:'Stories con productos disponibles y CTA claro',responsable:'Isabella',fecha:'2026-07-25',estado:'no_comenzado',urgencia:'media'},
+  {id:6,tarea:'Reactivar clientes anteriores por DM',responsable:'Isabella',fecha:'2026-07-25',estado:'no_comenzado',urgencia:'media'},
   {id:7,tarea:'Definir unidades y referencias para la feria',responsable:'Jacobo',fecha:'2026-07-15',estado:'no_comenzado',urgencia:'alta'},
   {id:8,tarea:'Cotizar materiales y costos del stand',responsable:'Jacobo',fecha:'2026-07-10',estado:'no_comenzado',urgencia:'alta'},
   {id:9,tarea:'Confirmar pedido al proveedor (antes del 15 jul)',responsable:'Jacobo',fecha:'2026-07-15',estado:'no_comenzado',urgencia:'alta'},
@@ -1334,7 +1334,7 @@ function renderTareas(){
     const isDone=t.estado==='completado';
     return `<tr style="${isDone?'opacity:.5;':''}">
       <td><div style="font-size:13px;font-weight:${isDone?'400':'600'};${isDone?'text-decoration:line-through;color:#aaa;':''}">${t.tarea}</div></td>
-      <td><span style="font-size:12px;font-weight:600;color:${t.responsable==='Isabela'?'var(--red)':'#2c3e50'};">${t.responsable}</span></td>
+      <td><span style="font-size:12px;font-weight:600;color:${t.responsable==='Isabella'?'var(--red)':'#2c3e50'};">${t.responsable}</span></td>
       <td style="white-space:nowrap;font-size:12px;">${fechaFmt}</td>
       <td><span class="urg-badge urg-${t.urgencia}">${urgLabel}</span></td>
       <td><span class="est-badge est-${t.estado==='no_comenzado'?'no':t.estado==='en_progreso'?'prog':'done'}">${estLabel}</span></td>
