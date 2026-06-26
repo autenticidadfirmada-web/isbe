@@ -406,9 +406,40 @@ select.form-control{background-image:url("data:image/svg+xml,%3Csvg xmlns='http:
   </div>
 
   <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+      <div class="card-title">Costos Variables Mensuales</div>
+      <button class="btn btn-secondary btn-sm" onclick="openCostoVarModal()">+ Agregar</button>
+    </div>
+    <div style="font-size:11px;color:var(--sub);margin-bottom:10px;">Costos que cambian cada mes (empaque, publicidad, materiales…)</div>
+    <div id="lista-costos-var"></div>
+    <div style="margin-top:10px;padding-top:10px;border-top:1px solid #f0f0f0;display:flex;justify-content:space-between;font-size:14px;font-weight:700;">
+      <span>Total costos variables</span><span id="fin-total-costos-var">$0</span>
+    </div>
+  </div>
+
+  <div class="card">
     <div class="card-title">Punto de Equilibrio</div>
     <div id="fin-pe-info" style="font-size:13px;color:var(--sub);margin:8px 0 12px;"></div>
-    <div class="chart-wrap"><canvas id="chart-pe"></canvas></div>
+
+    <!-- Barra de progreso -->
+    <div style="margin-bottom:16px;">
+      <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:6px;">
+        <span style="color:#555;font-weight:600;">Progreso hacia el PE</span>
+        <span id="pe-pct-label" style="font-weight:800;color:var(--red);">0%</span>
+      </div>
+      <div style="background:#f0f0f0;border-radius:20px;height:12px;overflow:hidden;">
+        <div id="pe-progress-bar" style="height:100%;border-radius:20px;background:linear-gradient(90deg,#b03a2e,#e74c3c);transition:width .5s ease;width:0%;"></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:11px;color:#aaa;margin-top:4px;">
+        <span>$0</span>
+        <span id="pe-meta-label">Meta: $0</span>
+      </div>
+    </div>
+
+    <!-- Stats rápidos -->
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:16px;" id="pe-stats"></div>
+
+    <div class="chart-wrap" style="height:220px;"><canvas id="chart-pe"></canvas></div>
   </div>
 
   <div class="card">
@@ -418,6 +449,7 @@ select.form-control{background-image:url("data:image/svg+xml,%3Csvg xmlns='http:
     <div class="fin-row"><span class="fin-label">Costo transporte</span><span class="fin-val" id="fin-costo-trans">$0</span></div>
     <div class="fin-row"><span class="fin-label">Gastos adicionales</span><span class="fin-val" id="fin-gastos-ad">$0</span></div>
     <div class="fin-row"><span class="fin-label">Gastos fijos</span><span class="fin-val" id="fin-gastos-fijos-total">$0</span></div>
+    <div class="fin-row"><span class="fin-label">Costos variables</span><span class="fin-val" id="fin-costos-var-total">$0</span></div>
     <div class="fin-row" style="font-size:16px;font-weight:800;margin-top:4px;"><span>Utilidad Neta</span><span id="fin-util-neta" style="color:var(--green);">$0</span></div>
     <div class="fin-row"><span class="fin-label">Recuperado de inversión</span><span class="fin-val" id="fin-recuperado">0%</span></div>
   </div>
@@ -513,6 +545,19 @@ select.form-control{background-image:url("data:image/svg+xml,%3Csvg xmlns='http:
   </div>
 </div>
 
+<!-- MODAL COSTO VARIABLE -->
+<div class="modal" id="modal-costo-var">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeCostoVarModal()">×</button>
+    <div class="modal-title">Costo Variable</div>
+    <input type="hidden" id="cvar-edit-idx" value="-1">
+    <div class="form-group"><label class="form-label">Descripción</label><input id="cvar-desc" class="form-control" type="text" placeholder="Ej: Empaque, publicidad, materiales…"></div>
+    <div class="form-group"><label class="form-label">Monto este mes</label><input id="cvar-monto" class="form-control" type="text" inputmode="numeric" placeholder="0"></div>
+    <button class="btn btn-primary" onclick="guardarCostoVar()">Guardar</button>
+    <button class="btn btn-secondary" style="margin-top:8px;" onclick="closeCostoVarModal()">Cancelar</button>
+  </div>
+</div>
+
 <!-- MODAL INVENTARIO -->
 <div class="modal" id="modal-inventario">
   <div class="modal-box">
@@ -555,7 +600,7 @@ let chartMes=null,chartProd=null,chartPE=null;
 // STORAGE
 function getVentas(){ try{return JSON.parse(localStorage.getItem(KEY))||[];}catch{return[];} }
 function setVentas(v){ localStorage.setItem(KEY,JSON.stringify(v)); sincronizarConDrive(v); }
-function getFinanzas(){ try{return JSON.parse(localStorage.getItem(FIN_KEY))||{inversionInicial:12000000,gastosFijos:[]};}catch{return{inversionInicial:12000000,gastosFijos:[]};} }
+function getFinanzas(){ try{return JSON.parse(localStorage.getItem(FIN_KEY))||{inversionInicial:12000000,gastosFijos:[],costosVar:[]};}catch{return{inversionInicial:12000000,gastosFijos:[],costosVar:[]};} }
 function setFinanzas(f){ localStorage.setItem(FIN_KEY,JSON.stringify(f)); syncTodo(); }
 function getInventario(){ try{return JSON.parse(localStorage.getItem(INV_KEY))||[];}catch{return[];} }
 function setInventario(a){ localStorage.setItem(INV_KEY,JSON.stringify(a)); syncTodo(); }
@@ -855,12 +900,25 @@ function renderFinanzas(){
       </div>
     </div>`).join('')||'<div style="color:#aaa;font-size:13px;padding:8px 0;">Sin gastos registrados</div>';
 
+  const costosVar=fin.costosVar||[];
+  const totalVar=costosVar.reduce((s,g)=>s+(g.monto||0),0);
+  document.getElementById('fin-total-costos-var').textContent=fmt(totalVar);
+  document.getElementById('lista-costos-var').innerHTML=costosVar.map((g,i)=>`
+    <div class="fin-row">
+      <span class="fin-label">${g.desc}</span>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span class="fin-val">${fmt(g.monto)}</span>
+        <button onclick="editarCostoVar(${i})" style="background:none;border:none;color:#888;cursor:pointer;">✏️</button>
+        <button onclick="eliminarCostoVar(${i})" style="background:none;border:none;color:#c0392b;cursor:pointer;">🗑️</button>
+      </div>
+    </div>`).join('')||'<div style="color:#aaa;font-size:13px;padding:8px 0;">Sin costos registrados</div>';
+
   const ventas=getVentas().filter(v=>v.estado!=='cancelada');
   const ing=ventas.reduce((s,v)=>s+(v.precio||0)+(v.domicilio||0),0);
   const prod=ventas.reduce((s,v)=>s+(v.costo||0),0);
   const trans=ventas.reduce((s,v)=>s+(v.transporte||0),0);
   const gasAd=ventas.reduce((s,v)=>s+(v.gastos||0),0);
-  const util=ing-prod-trans-gasAd-totalFijos;
+  const util=ing-prod-trans-gasAd-totalFijos-totalVar;
   const inversion=fin.inversionInicial||0;
   const rec=inversion?Math.min(100,Math.round(util/inversion*100)):0;
 
@@ -869,27 +927,90 @@ function renderFinanzas(){
   document.getElementById('fin-costo-trans').textContent=fmt(trans);
   document.getElementById('fin-gastos-ad').textContent=fmt(gasAd);
   document.getElementById('fin-gastos-fijos-total').textContent=fmt(totalFijos);
+  document.getElementById('fin-costos-var-total').textContent=fmt(totalVar);
   document.getElementById('fin-util-neta').textContent=fmt(util);
   document.getElementById('fin-recuperado').textContent=rec+'%';
 
   // PE chart
   const costoVarProm=ventas.length?(prod+trans)/ventas.length:0;
   const precioVarProm=ventas.length?ing/ventas.length:0;
+  const totalCostosFijos=totalFijos+totalVar;
   const mc=precioVarProm-costoVarProm;
-  const pe=mc>0?Math.ceil(totalFijos/mc):0;
+  const pe=mc>0?Math.ceil(totalCostosFijos/mc):0;
+  const ventasActuales=ventas.length;
+  const ingActual=ing;
+  const costoActual=totalCostosFijos+(costoVarProm*ventasActuales);
+  const utilActual=ingActual-costoActual;
+  const yaPasoPE=utilActual>=0;
+  const progresoPct=pe>0?Math.min(100,Math.round(ventasActuales/pe*100)):0;
+
   document.getElementById('fin-pe-info').innerHTML=pe>0
-    ?`Necesitas vender <strong>${pe} unidades/mes</strong> para cubrir gastos fijos.<br><span style="color:#aaa;">Precio prom: ${fmt(precioVarProm)} · Costo var prom: ${fmt(costoVarProm)}</span>`
-    :'Agrega gastos fijos y ventas para calcular.';
+    ?`Necesitas <strong>${pe} unidades/mes</strong> para cubrir todos los costos.${yaPasoPE?` <span style="color:#1a8a45;font-weight:700;">✓ ¡Ya superaste el PE!</span>`:` Te faltan <strong>${Math.max(0,pe-ventasActuales)} unidades</strong>.`}`
+    :'Agrega costos y registra ventas para calcular.';
+
+  // Barra de progreso
+  document.getElementById('pe-progress-bar').style.width=progresoPct+'%';
+  document.getElementById('pe-progress-bar').style.background=yaPasoPE?'linear-gradient(90deg,#1a8a45,#30d158)':'linear-gradient(90deg,#b03a2e,#e74c3c)';
+  document.getElementById('pe-pct-label').textContent=progresoPct+'%';
+  document.getElementById('pe-pct-label').style.color=yaPasoPE?'#1a8a45':'var(--red)';
+  document.getElementById('pe-meta-label').textContent='Meta: '+pe+' unidades';
+
+  // Stats rápidos
+  document.getElementById('pe-stats').innerHTML=`
+    <div style="text-align:center;background:#f9f9f9;border-radius:10px;padding:10px;">
+      <div style="font-size:10px;color:#888;margin-bottom:4px;">Vendidas</div>
+      <div style="font-size:20px;font-weight:800;color:#1d1d1f;">${ventasActuales}</div>
+    </div>
+    <div style="text-align:center;background:#f9f9f9;border-radius:10px;padding:10px;">
+      <div style="font-size:10px;color:#888;margin-bottom:4px;">Meta PE</div>
+      <div style="font-size:20px;font-weight:800;color:var(--red);">${pe}</div>
+    </div>
+    <div style="text-align:center;background:${yaPasoPE?'#eaf9f0':'#fff0f0'};border-radius:10px;padding:10px;">
+      <div style="font-size:10px;color:#888;margin-bottom:4px;">${yaPasoPE?'Utilidad':'Déficit'}</div>
+      <div style="font-size:16px;font-weight:800;color:${yaPasoPE?'#1a8a45':'#b03a2e'};">${fmt(Math.abs(utilActual))}</div>
+    </div>`;
+
   if(chartPE)chartPE.destroy();
-  const maxU=Math.max(pe*2,20);
+  const maxU=Math.max(pe*2,ventasActuales+5,20);
   const us=Array.from({length:maxU+1},(_,i)=>i);
-  chartPE=new Chart(document.getElementById('chart-pe').getContext('2d'),{type:'line',data:{labels:us,datasets:[
-    {label:'Ingresos',data:us.map(u=>u*precioVarProm),borderColor:'#1a8a45',backgroundColor:'rgba(26,138,69,.08)',fill:true,tension:.4,pointRadius:0},
-    {label:'Costos',data:us.map(u=>totalFijos+u*costoVarProm),borderColor:'#b03a2e',backgroundColor:'rgba(176,58,46,.08)',fill:true,tension:.4,pointRadius:0}
-  ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:10}}}},scales:{y:{ticks:{callback:v=>'$'+v.toLocaleString('es-CO')}},x:{title:{display:true,text:'Unidades'}}}}});
+  const ingData=us.map(u=>u*precioVarProm);
+  const costoData=us.map(u=>totalCostosFijos+u*costoVarProm);
+  chartPE=new Chart(document.getElementById('chart-pe').getContext('2d'),{
+    type:'line',
+    data:{labels:us,datasets:[
+      {label:'Ingresos',data:ingData,borderColor:'#1a8a45',backgroundColor:'rgba(26,138,69,.1)',fill:true,tension:.4,pointRadius:0},
+      {label:'Costos totales',data:costoData,borderColor:'#b03a2e',backgroundColor:'rgba(176,58,46,.1)',fill:true,tension:.4,pointRadius:0},
+      {label:'Posición actual',data:us.map(u=>u===ventasActuales?ingActual:null),borderColor:'#1d1d1f',backgroundColor:'#1d1d1f',pointRadius:us.map(u=>u===ventasActuales?7:0),pointStyle:'circle',showLine:false}
+    ]},
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{
+        legend:{position:'bottom',labels:{font:{size:10}}},
+        annotation:{},
+        tooltip:{callbacks:{label:ctx=>ctx.dataset.label+': '+fmt(ctx.raw)}}
+      },
+      scales:{
+        y:{ticks:{callback:v=>'$'+v.toLocaleString('es-CO')}},
+        x:{title:{display:true,text:'Unidades vendidas'}}
+      }
+    }
+  });
 }
 function guardarInversion(){const fin=getFinanzas();fin.inversionInicial=parsePeso(document.getElementById('fin-inversion').value);setFinanzas(fin);renderFinanzas();}
 function openGastoModal(){document.getElementById('gasto-edit-idx').value=-1;document.getElementById('gasto-desc').value='';document.getElementById('gasto-monto').value='';document.getElementById('modal-gasto').classList.add('show');}
+function openCostoVarModal(){document.getElementById('cvar-edit-idx').value=-1;document.getElementById('cvar-desc').value='';document.getElementById('cvar-monto').value='';document.getElementById('modal-costo-var').classList.add('show');}
+function closeCostoVarModal(){document.getElementById('modal-costo-var').classList.remove('show');}
+function editarCostoVar(i){const fin=getFinanzas();const g=fin.costosVar[i];document.getElementById('cvar-edit-idx').value=i;document.getElementById('cvar-desc').value=g.desc;document.getElementById('cvar-monto').value=g.monto;document.getElementById('modal-costo-var').classList.add('show');}
+function eliminarCostoVar(i){const fin=getFinanzas();fin.costosVar.splice(i,1);setFinanzas(fin);renderFinanzas();}
+function guardarCostoVar(){
+  const desc=document.getElementById('cvar-desc').value.trim();
+  const monto=parsePeso(document.getElementById('cvar-monto').value);
+  if(!desc||!monto){showToast('Completa todos los campos','err');return;}
+  const fin=getFinanzas();fin.costosVar=fin.costosVar||[];
+  const idx=parseInt(document.getElementById('cvar-edit-idx').value);
+  if(idx>=0)fin.costosVar[idx]={desc,monto};else fin.costosVar.push({desc,monto});
+  setFinanzas(fin);closeCostoVarModal();renderFinanzas();showToast('✓ Guardado','ok');
+}
 function closeGastoModal(){document.getElementById('modal-gasto').classList.remove('show');}
 function editarGasto(i){const fin=getFinanzas();const g=fin.gastosFijos[i];document.getElementById('gasto-edit-idx').value=i;document.getElementById('gasto-desc').value=g.desc;document.getElementById('gasto-monto').value=g.monto;document.getElementById('modal-gasto').classList.add('show');}
 function eliminarGasto(i){const fin=getFinanzas();fin.gastosFijos.splice(i,1);setFinanzas(fin);renderFinanzas();}
@@ -957,9 +1078,10 @@ function renderSocios(){
   const ventas=getVentas().filter(v=>v.estado!=='cancelada');
   const fin=getFinanzas();
   const fijos=(fin.gastosFijos||[]).reduce((s,g)=>s+(g.monto||0),0);
+  const vars=(fin.costosVar||[]).reduce((s,g)=>s+(g.monto||0),0);
   const ing=ventas.reduce((s,v)=>s+(v.precio||0)+(v.domicilio||0),0);
   const costos=ventas.reduce((s,v)=>s+(v.costo||0)+(v.transporte||0)+(v.gastos||0),0);
-  const utilTotal=ing-costos-fijos;
+  const utilTotal=ing-costos-fijos-vars;
   const repartos=soc.repartos||[];
   const yaRep=repartos.reduce((s,r)=>s+(r.monto||0),0);
   const disp=Math.max(0,utilTotal-yaRep-RESERVA);
