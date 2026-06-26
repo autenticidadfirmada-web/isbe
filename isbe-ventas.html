@@ -148,6 +148,12 @@ select.form-control{background-image:url("data:image/svg+xml,%3Csvg xmlns='http:
 .empty{text-align:center;padding:44px 20px;color:var(--sub);}
 .empty-icon{font-size:44px;margin-bottom:10px;}
 
+/* REPORTES */
+.rep-tab{padding:7px 16px;border-radius:20px;border:1.5px solid var(--border);background:#fff;font-size:13px;font-weight:500;color:#555;cursor:pointer;white-space:nowrap;flex-shrink:0;}
+.rep-tab.active{background:var(--red);color:#fff;border-color:var(--red);}
+.insight-item{display:flex;gap:10px;margin-bottom:10px;align-items:flex-start;font-size:13px;line-height:1.5;}
+.insight-item:last-child{margin-bottom:0;}
+
 @media(max-width:390px){
   .kpi-grid{gap:8px;}
   .mb-val{font-size:22px;}
@@ -184,6 +190,7 @@ select.form-control{background-image:url("data:image/svg+xml,%3Csvg xmlns='http:
     <div class="sb-item" onclick="navTo('inventario')"><span class="sb-icon">🗃️</span>Inventario</div>
     <div class="sb-item" onclick="navTo('socios')"><span class="sb-icon">🤝</span>Socios</div>
     <div class="sb-item" onclick="navTo('tareas')"><span class="sb-icon">✅</span>Tareas</div>
+    <div class="sb-item" onclick="navTo('reportes')"><span class="sb-icon">📈</span>Reportes</div>
   </div>
 </div>
 <div id="overlay" onclick="closeSidebar()"></div>
@@ -594,6 +601,63 @@ select.form-control{background-image:url("data:image/svg+xml,%3Csvg xmlns='http:
   <div id="tabla-tareas"></div>
 </div>
 
+<!-- REPORTES -->
+<div class="sec" id="sec-reportes">
+  <div class="sec-hdr"><div class="sec-title">Reportes</div></div>
+
+  <!-- Tabs de período -->
+  <div style="display:flex;gap:8px;margin-bottom:12px;overflow-x:auto;padding-bottom:2px;">
+    <button class="rep-tab active" onclick="setRepPeriodo('mensual')" id="rtab-mensual">Mensual</button>
+    <button class="rep-tab" onclick="setRepPeriodo('trimestral')" id="rtab-trimestral">Trimestral</button>
+    <button class="rep-tab" onclick="setRepPeriodo('semestral')" id="rtab-semestral">Semestral</button>
+    <button class="rep-tab" onclick="setRepPeriodo('anual')" id="rtab-anual">Anual</button>
+  </div>
+
+  <!-- Selectores -->
+  <div style="display:flex;gap:8px;margin-bottom:14px;">
+    <select id="rep-año" class="form-control" style="width:90px;padding:8px 10px;font-size:13px;" onchange="renderReportes()"></select>
+    <select id="rep-sub" class="form-control" style="flex:1;padding:8px 10px;font-size:13px;" onchange="renderReportes()"></select>
+  </div>
+
+  <!-- KPIs -->
+  <div class="kpi-grid" style="margin-bottom:14px;">
+    <div class="kpi-card"><div class="kpi-label">Ingresos</div><div class="kpi-value red" id="rep-ing">$0</div><div class="kpi-sub" id="rep-ing-sub">0 ventas</div></div>
+    <div class="kpi-card"><div class="kpi-label">Unidades</div><div class="kpi-value" id="rep-und">0</div><div class="kpi-sub" id="rep-und-sub">vendidas</div></div>
+    <div class="kpi-card"><div class="kpi-label">Utilidad</div><div class="kpi-value green" id="rep-util">$0</div><div class="kpi-sub" id="rep-util-sub">Margen: 0%</div></div>
+    <div class="kpi-card"><div class="kpi-label">Ticket prom.</div><div class="kpi-value" id="rep-ticket">$0</div><div class="kpi-sub">Por venta</div></div>
+  </div>
+
+  <!-- Comportamiento de ventas -->
+  <div class="card">
+    <div class="card-title">Comportamiento de ventas</div>
+    <div class="card-sub" id="rep-chart1-sub">Ingresos vs Utilidad por período</div>
+    <div class="chart-wrap"><canvas id="chart-rep-ventas"></canvas></div>
+  </div>
+
+  <!-- Tendencias por modelo -->
+  <div class="card">
+    <div class="card-title">Tendencias por modelo</div>
+    <div class="card-sub">Unidades vendidas por referencia</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:center;">
+      <div id="rep-modelos-lista"></div>
+      <div class="chart-wrap" style="height:160px;"><canvas id="chart-rep-modelos"></canvas></div>
+    </div>
+  </div>
+
+  <!-- Seasonality -->
+  <div class="card">
+    <div class="card-title">Picos de venta históricos</div>
+    <div class="card-sub">Ingresos acumulados por mes · todos los años · oscuro = pico</div>
+    <div class="chart-wrap"><canvas id="chart-rep-season"></canvas></div>
+  </div>
+
+  <!-- Insights -->
+  <div class="card" style="background:linear-gradient(135deg,#7D2027,#CF5527);color:#fff;margin-bottom:4px;">
+    <div style="font-size:14px;font-weight:800;margin-bottom:12px;">💡 Insights y recomendaciones</div>
+    <div id="rep-insights"></div>
+  </div>
+</div>
+
 </div><!-- /main -->
 
 <!-- MODAL SYNC -->
@@ -793,8 +857,8 @@ function guardarSyncURL(){
 }
 
 // NAV
-const NAVS={dashboard:'Dashboard',nueva:'Nueva Venta',pedidos:'Pedidos',historial:'Historial',finanzas:'Finanzas',inventario:'Inventario',socios:'Socios',tareas:'Tareas'};
-const SUBS={dashboard:'Resumen general de tu negocio',nueva:'Registra una nueva venta',pedidos:'Ventas pendientes de entrega',historial:'Todas las ventas registradas',finanzas:'Inversión y punto de equilibrio',inventario:'Control de stock',socios:'Distribución 50/50',tareas:'Plan 25 jun – 25 jul'};
+const NAVS={dashboard:'Dashboard',nueva:'Nueva Venta',pedidos:'Pedidos',historial:'Historial',finanzas:'Finanzas',inventario:'Inventario',socios:'Socios',tareas:'Tareas',reportes:'Reportes'};
+const SUBS={dashboard:'Resumen general de tu negocio',nueva:'Registra una nueva venta',pedidos:'Ventas pendientes de entrega',historial:'Todas las ventas registradas',finanzas:'Inversión y punto de equilibrio',inventario:'Control de stock',socios:'Distribución 50/50',tareas:'Plan 25 jun – 25 jul',reportes:'Análisis de ventas y tendencias'};
 function navTo(id){
   Object.keys(NAVS).forEach(k=>{
     document.getElementById('sec-'+k).classList.toggle('active',k===id);
@@ -810,6 +874,7 @@ function navTo(id){
   if(id==='inventario')renderInventario();
   if(id==='socios')renderSocios();
   if(id==='tareas')renderTareas();
+  if(id==='reportes'){populateRepAños();populateRepSub();renderReportes();}
 }
 function toggleSidebar(){document.getElementById('sidebar').classList.toggle('open');document.getElementById('overlay').classList.toggle('show');}
 function closeSidebar(){document.getElementById('sidebar').classList.remove('open');document.getElementById('overlay').classList.remove('show');}
@@ -1272,6 +1337,172 @@ function guardarReparto(){
   setSocios(soc);closeRepartoModal();renderSocios();showToast('✓ Reparto registrado','ok');
 }
 function eliminarReparto(i){const soc=getSocios();soc.repartos.splice(i,1);setSocios(soc);renderSocios();showToast('Eliminado','');}
+
+// REPORTES
+let repPeriodo='mensual';
+let chartRepVentas=null,chartRepModelos=null,chartRepSeason=null;
+const MESES_NOM=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+const MESES_FULL=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+const REP_COLORS=['#7D2027','#CF5527','#998731','#5FA8C2','#FAE3B1','#673C34'];
+
+function setRepPeriodo(p){
+  repPeriodo=p;
+  document.querySelectorAll('.rep-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('rtab-'+p).classList.add('active');
+  populateRepSub();
+  renderReportes();
+}
+
+function populateRepAños(){
+  const ventas=getVentas();
+  const años=[...new Set(ventas.map(v=>new Date(v.fecha+'T12:00:00').getFullYear()))].sort((a,b)=>b-a);
+  if(!años.length)años.push(new Date().getFullYear());
+  const sel=document.getElementById('rep-año');
+  const cur=sel.value||new Date().getFullYear().toString();
+  sel.innerHTML=años.map(a=>`<option value="${a}"${a==cur?' selected':''}>${a}</option>`).join('');
+  if(!sel.value)sel.value=años[0];
+}
+
+function populateRepSub(){
+  const sel=document.getElementById('rep-sub');
+  if(repPeriodo==='mensual'){
+    sel.innerHTML=MESES_FULL.map((m,i)=>`<option value="${i}">${m}</option>`).join('');
+    sel.value=new Date().getMonth();
+    sel.style.display='';
+  } else if(repPeriodo==='trimestral'){
+    sel.innerHTML='<option value="0">Q1 — Ene · Feb · Mar</option><option value="1">Q2 — Abr · May · Jun</option><option value="2">Q3 — Jul · Ago · Sep</option><option value="3">Q4 — Oct · Nov · Dic</option>';
+    sel.value=Math.floor(new Date().getMonth()/3);
+    sel.style.display='';
+  } else if(repPeriodo==='semestral'){
+    sel.innerHTML='<option value="0">S1 — Enero a Junio</option><option value="1">S2 — Julio a Diciembre</option>';
+    sel.value=new Date().getMonth()<6?'0':'1';
+    sel.style.display='';
+  } else {
+    sel.style.display='none';
+  }
+}
+
+function getRepMeses(){
+  const val=parseInt(document.getElementById('rep-sub')?.value||0);
+  if(repPeriodo==='mensual') return [val];
+  if(repPeriodo==='trimestral') return [val*3,val*3+1,val*3+2];
+  if(repPeriodo==='semestral') return val===0?[0,1,2,3,4,5]:[6,7,8,9,10,11];
+  return [0,1,2,3,4,5,6,7,8,9,10,11];
+}
+
+function renderReportes(){
+  const año=parseInt(document.getElementById('rep-año')?.value||new Date().getFullYear());
+  const meses=getRepMeses();
+  const todasVentas=getVentas().filter(v=>v.estado!=='cancelada');
+  const filtered=todasVentas.filter(v=>{
+    const d=new Date(v.fecha+'T12:00:00');
+    return d.getFullYear()===año && meses.includes(d.getMonth());
+  });
+
+  // KPIs
+  const ing=filtered.reduce((s,v)=>s+(v.precio||0)+(v.domicilio||0),0);
+  const costo=filtered.reduce((s,v)=>s+(v.costo||0)+(v.transporte||0)+(v.gastos||0),0);
+  const util=ing-costo;
+  const margen=ing?Math.round(util/ing*100):0;
+  const ticket=filtered.length?Math.round(ing/filtered.length):0;
+  document.getElementById('rep-ing').textContent=fmt(ing);
+  document.getElementById('rep-und').textContent=filtered.length;
+  document.getElementById('rep-util').textContent=fmt(util);
+  document.getElementById('rep-ticket').textContent=fmt(ticket);
+  document.getElementById('rep-ing-sub').textContent=filtered.length+' ventas';
+  document.getElementById('rep-und-sub').textContent='Margen: '+margen+'%';
+  document.getElementById('rep-util-sub').textContent='Margen: '+margen+'%';
+
+  // Chart 1 — Comportamiento
+  let labels,dataIng,dataUtil;
+  if(repPeriodo==='mensual'){
+    labels=['Sem 1','Sem 2','Sem 3','Sem 4'];
+    dataIng=[0,0,0,0]; dataUtil=[0,0,0,0];
+    filtered.forEach(v=>{
+      const w=Math.min(3,Math.floor((new Date(v.fecha+'T12:00:00').getDate()-1)/7));
+      const i=(v.precio||0)+(v.domicilio||0);
+      const c=(v.costo||0)+(v.transporte||0)+(v.gastos||0);
+      dataIng[w]+=i; dataUtil[w]+=(i-c);
+    });
+  } else {
+    labels=meses.map(m=>MESES_NOM[m]);
+    dataIng=meses.map(m=>filtered.filter(v=>new Date(v.fecha+'T12:00:00').getMonth()===m).reduce((s,v)=>s+(v.precio||0)+(v.domicilio||0),0));
+    dataUtil=meses.map((m,i)=>dataIng[i]-meses.map(m=>filtered.filter(v=>new Date(v.fecha+'T12:00:00').getMonth()===m).reduce((s,v)=>s+(v.costo||0)+(v.transporte||0)+(v.gastos||0),0))[i]);
+  }
+  if(chartRepVentas)chartRepVentas.destroy();
+  chartRepVentas=new Chart(document.getElementById('chart-rep-ventas').getContext('2d'),{
+    type:'bar',
+    data:{labels,datasets:[
+      {label:'Ingresos',data:dataIng,backgroundColor:'#7D2027',borderRadius:4},
+      {label:'Utilidad',data:dataUtil,backgroundColor:'#5FA8C2',borderRadius:4}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:10}}}},scales:{y:{ticks:{callback:v=>'$'+Math.round(v).toLocaleString('es-CO')}}}}
+  });
+
+  // Chart 2 — Modelos
+  const modMap={};
+  filtered.forEach(v=>{const p=v.producto||'Otro';modMap[p]=(modMap[p]||0)+1;});
+  const modSorted=Object.entries(modMap).sort((a,b)=>b[1]-a[1]);
+  document.getElementById('rep-modelos-lista').innerHTML=modSorted.slice(0,5).map(([p,q],i)=>`
+    <div style="display:flex;justify-content:space-between;font-size:12px;padding:5px 0;border-bottom:1px solid #f5f5f5;">
+      <div style="display:flex;align-items:center;gap:6px;">
+        <span style="width:8px;height:8px;border-radius:50%;background:${REP_COLORS[i]||'#ccc'};display:inline-block;flex-shrink:0;"></span>
+        <span style="color:#555;">${p}</span>
+      </div>
+      <span style="font-weight:700;">${q} und</span>
+    </div>`).join('')||'<div style="color:#aaa;font-size:12px;padding:8px 0;">Sin ventas en este período</div>';
+  if(chartRepModelos)chartRepModelos.destroy();
+  if(modSorted.length){
+    chartRepModelos=new Chart(document.getElementById('chart-rep-modelos').getContext('2d'),{
+      type:'doughnut',
+      data:{labels:modSorted.map(x=>x[0]),datasets:[{data:modSorted.map(x=>x[1]),backgroundColor:REP_COLORS,borderWidth:0}]},
+      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}}}
+    });
+  }
+
+  // Chart 3 — Seasonality (histórico todos los años)
+  const season=Array(12).fill(0);
+  todasVentas.forEach(v=>{season[new Date(v.fecha+'T12:00:00').getMonth()]+=(v.precio||0)+(v.domicilio||0);});
+  const maxSeason=Math.max(...season)||1;
+  if(chartRepSeason)chartRepSeason.destroy();
+  chartRepSeason=new Chart(document.getElementById('chart-rep-season').getContext('2d'),{
+    type:'bar',
+    data:{labels:MESES_NOM,datasets:[{
+      label:'Ingresos históricos',
+      data:season,
+      backgroundColor:season.map(v=>v>=maxSeason*0.85?'#7D2027':v>=maxSeason*0.6?'#CF5527':v>=maxSeason*0.35?'#998731':'#FAE3B1'),
+      borderRadius:4
+    }]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>'$'+Math.round(ctx.raw).toLocaleString('es-CO')}}},scales:{y:{ticks:{callback:v=>'$'+Math.round(v).toLocaleString('es-CO')}}}}
+  });
+
+  // Insights automáticos
+  const mejorMesIdx=season.indexOf(maxSeason);
+  const mejorMes=MESES_FULL[mejorMesIdx];
+  const picos=season.reduce((acc,v,i)=>{if(v>=maxSeason*0.7)acc.push(MESES_NOM[i]);return acc;},[]);
+  const mejorModelo=modSorted[0]?modSorted[0][0]:null;
+  const mejorModeloPct=mejorModelo&&filtered.length?Math.round(modSorted[0][1]/filtered.length*100):0;
+  const peorMesIdx=season.findIndex(v=>v===Math.min(...season.filter(x=>x>0)));
+  const peorMes=peorMesIdx>=0?MESES_FULL[peorMesIdx]:null;
+
+  let insights='';
+  if(maxSeason>0){
+    insights+=`<div class="insight-item">📅 <div><strong>${mejorMes}</strong> es tu mes histórico más fuerte — lanza colecciones nuevas o ediciones especiales ese mes.</div></div>`;
+  }
+  if(picos.length>1){
+    insights+=`<div class="insight-item">🔥 <div>Meses de pico: <strong>${picos.join(', ')}</strong> — prepara inventario y contenido con al menos 4 semanas de anticipación.</div></div>`;
+  }
+  if(peorMes&&maxSeason>0){
+    insights+=`<div class="insight-item">🏷️ <div><strong>${peorMes}</strong> tiende a ser más lento — ideal para liquidar stock con descuentos o lanzar un preventa.</div></div>`;
+  }
+  if(mejorModelo){
+    insights+=`<div class="insight-item">👜 <div><strong>${mejorModelo}</strong> lidera ventas (${mejorModeloPct}% del período) — asegura inventario suficiente antes de temporada alta.</div></div>`;
+  }
+  if(!filtered.length){
+    insights='<div style="opacity:.8;font-size:13px;">Registra ventas para generar insights automáticos.</div>';
+  }
+  document.getElementById('rep-insights').innerHTML=insights;
+}
 
 // TAREAS
 const TAREAS_KEY='isbe_tareas_v1';
