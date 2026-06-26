@@ -589,15 +589,8 @@ select.form-control{background-image:url("data:image/svg+xml,%3Csvg xmlns='http:
   </div>
   <div style="margin-bottom:12px;"></div>
 
-  <!-- Tabla -->
-  <div class="table-scroll">
-    <table style="min-width:500px;">
-      <thead>
-        <tr><th>Tarea</th><th>Fecha</th><th>Urgencia</th><th>Estado</th></tr>
-      </thead>
-      <tbody id="tabla-tareas"></tbody>
-    </table>
-  </div>
+  <!-- Tarjetas de tareas -->
+  <div id="tabla-tareas"></div>
 </div>
 
 </div><!-- /main -->
@@ -1324,23 +1317,30 @@ function renderTareas(){
   if(chartTarEst)chartTarEst.destroy();
   chartTarEst=new Chart(document.getElementById('chart-tar-est').getContext('2d'),{type:'doughnut',data:{labels:['No iniciado','En progreso','Completado'],datasets:[{data:[estC.no_comenzado,estC.en_progreso,estC.completado],backgroundColor:['#ddd','#f39c12','#1a8a45'],borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:9},boxWidth:10,padding:6}}}}});
 
-  // Tabla — filas tocables
+  // Tarjetas tocables
   const urgOrd={alta:0,media:1,baja:2},estOrd={no_comenzado:0,en_progreso:1,completado:2};
   const sorted=[...tareas].sort((a,b)=>estOrd[a.estado]-estOrd[b.estado]||urgOrd[a.urgencia]-urgOrd[b.urgencia]);
+  const urgLabel={alta:'Alta',media:'Media',baja:'Baja'};
+  const estLabel={no_comenzado:'⬜ No iniciado',en_progreso:'🔄 En progreso',completado:'✅ Completado'};
   document.getElementById('tabla-tareas').innerHTML=sorted.map(t=>{
     const fechaFmt=t.fecha?new Date(t.fecha+'T12:00:00').toLocaleDateString('es-CO',{day:'numeric',month:'short'}):'–';
     const isDone=t.estado==='completado';
-    const urgLabel={alta:'Alta',media:'Media',baja:'Baja'}[t.urgencia]||'';
-    const estLabel={no_comenzado:'No iniciado',en_progreso:'En progreso',completado:'Completado'}[t.estado]||'';
-    return `<tr onclick="editarTarea(${t.id})" style="cursor:pointer;${isDone?'opacity:.5;':''}active:background:#f5f5f5;">
-      <td><div style="font-size:12px;font-weight:${isDone?'400':'600'};${isDone?'text-decoration:line-through;color:#aaa;':''}">${t.tarea}</div>
-        <div style="font-size:11px;color:${t.responsable==='Isabella'?'var(--red)':'#2c3e50'};margin-top:2px;font-weight:600;">${t.responsable}</div>
-      </td>
-      <td style="white-space:nowrap;font-size:11px;color:#888;">${fechaFmt}</td>
-      <td><span class="urg-badge urg-${t.urgencia}">${urgLabel}</span></td>
-      <td><span class="est-badge est-${t.estado==='no_comenzado'?'no':t.estado==='en_progreso'?'prog':'done'}">${estLabel}</span></td>
-    </tr>`;
-  }).join('')||`<tr><td colspan="4" style="text-align:center;color:#aaa;padding:24px;">Sin tareas</td></tr>`;
+    return `<div onclick="editarTarea(${t.id})" style="background:#fff;border-radius:14px;padding:14px 16px;margin-bottom:10px;box-shadow:0 1px 3px rgba(0,0,0,.06);display:flex;justify-content:space-between;align-items:center;cursor:pointer;opacity:${isDone?'.5':'1'};">
+      <div style="flex:1;min-width:0;padding-right:12px;">
+        <div style="font-size:13px;font-weight:${isDone?'400':'600'};${isDone?'text-decoration:line-through;color:#aaa;':''};margin-bottom:6px;">${t.tarea}</div>
+        <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
+          <span style="font-size:11px;font-weight:700;color:${t.responsable==='Isabella'?'var(--red)':'#2c3e50'};">${t.responsable}</span>
+          <span style="color:#ddd;">·</span>
+          <span class="urg-badge urg-${t.urgencia}">${urgLabel[t.urgencia]}</span>
+          <span style="color:#ddd;">·</span>
+          <span style="font-size:11px;color:#888;">${fechaFmt}</span>
+        </div>
+      </div>
+      <div style="flex-shrink:0;">
+        <span class="est-badge est-${t.estado==='no_comenzado'?'no':t.estado==='en_progreso'?'prog':'done'}" style="white-space:nowrap;">${estLabel[t.estado]}</span>
+      </div>
+    </div>`;
+  }).join('')||`<div style="text-align:center;color:#aaa;padding:44px 20px;">Sin tareas</div>`;
 }
 
 function updateTareaField(id,field,value){
