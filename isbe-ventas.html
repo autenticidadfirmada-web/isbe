@@ -593,7 +593,7 @@ select.form-control{background-image:url("data:image/svg+xml,%3Csvg xmlns='http:
   <div class="table-scroll">
     <table style="min-width:500px;">
       <thead>
-        <tr><th>Tarea</th><th>Responsable</th><th>Fecha</th><th>Urgencia</th><th>Estado</th><th></th></tr>
+        <tr><th>Tarea</th><th>Fecha</th><th>Urgencia</th><th>Estado</th></tr>
       </thead>
       <tbody id="tabla-tareas"></tbody>
     </table>
@@ -1324,40 +1324,23 @@ function renderTareas(){
   if(chartTarEst)chartTarEst.destroy();
   chartTarEst=new Chart(document.getElementById('chart-tar-est').getContext('2d'),{type:'doughnut',data:{labels:['No iniciado','En progreso','Completado'],datasets:[{data:[estC.no_comenzado,estC.en_progreso,estC.completado],backgroundColor:['#ddd','#f39c12','#1a8a45'],borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:9},boxWidth:10,padding:6}}}}});
 
-  // Tabla
+  // Tabla — filas tocables
   const urgOrd={alta:0,media:1,baja:2},estOrd={no_comenzado:0,en_progreso:1,completado:2};
   const sorted=[...tareas].sort((a,b)=>estOrd[a.estado]-estOrd[b.estado]||urgOrd[a.urgencia]-urgOrd[b.urgencia]);
   document.getElementById('tabla-tareas').innerHTML=sorted.map(t=>{
     const fechaFmt=t.fecha?new Date(t.fecha+'T12:00:00').toLocaleDateString('es-CO',{day:'numeric',month:'short'}):'–';
     const isDone=t.estado==='completado';
-    const selStyle='border:none;background:transparent;font-size:11px;font-weight:600;cursor:pointer;padding:0;width:100%;-webkit-appearance:none;appearance:none;';
-    return `<tr style="${isDone?'opacity:.5;':''}">
-      <td><div style="font-size:12px;font-weight:${isDone?'400':'600'};${isDone?'text-decoration:line-through;color:#aaa;':''}">${t.tarea}</div></td>
-      <td>
-        <select style="${selStyle}color:${t.responsable==='Isabella'?'var(--red)':'#2c3e50'};" onchange="updateTareaField(${t.id},'responsable',this.value)">
-          <option value="Isabella" ${t.responsable==='Isabella'?'selected':''}>Isabella</option>
-          <option value="Jacobo" ${t.responsable==='Jacobo'?'selected':''}>Jacobo</option>
-          <option value="Ambos" ${t.responsable==='Ambos'?'selected':''}>Ambos</option>
-        </select>
+    const urgLabel={alta:'Alta',media:'Media',baja:'Baja'}[t.urgencia]||'';
+    const estLabel={no_comenzado:'No iniciado',en_progreso:'En progreso',completado:'Completado'}[t.estado]||'';
+    return `<tr onclick="editarTarea(${t.id})" style="cursor:pointer;${isDone?'opacity:.5;':''}active:background:#f5f5f5;">
+      <td><div style="font-size:12px;font-weight:${isDone?'400':'600'};${isDone?'text-decoration:line-through;color:#aaa;':''}">${t.tarea}</div>
+        <div style="font-size:11px;color:${t.responsable==='Isabella'?'var(--red)':'#2c3e50'};margin-top:2px;font-weight:600;">${t.responsable}</div>
       </td>
-      <td style="white-space:nowrap;font-size:12px;">${fechaFmt}</td>
-      <td>
-        <select class="urg-badge urg-${t.urgencia}" style="${selStyle}" onchange="updateTareaField(${t.id},'urgencia',this.value)">
-          <option value="alta" ${t.urgencia==='alta'?'selected':''}>Alta</option>
-          <option value="media" ${t.urgencia==='media'?'selected':''}>Media</option>
-          <option value="baja" ${t.urgencia==='baja'?'selected':''}>Baja</option>
-        </select>
-      </td>
-      <td>
-        <select class="est-badge est-${t.estado==='no_comenzado'?'no':t.estado==='en_progreso'?'prog':'done'}" style="${selStyle}" onchange="updateTareaField(${t.id},'estado',this.value)">
-          <option value="no_comenzado" ${t.estado==='no_comenzado'?'selected':''}>No iniciado</option>
-          <option value="en_progreso" ${t.estado==='en_progreso'?'selected':''}>En progreso</option>
-          <option value="completado" ${t.estado==='completado'?'selected':''}>Completado</option>
-        </select>
-      </td>
-      <td><button onclick="editarTarea(${t.id})" style="background:none;border:none;color:#ccc;cursor:pointer;font-size:14px;">✏️</button></td>
+      <td style="white-space:nowrap;font-size:11px;color:#888;">${fechaFmt}</td>
+      <td><span class="urg-badge urg-${t.urgencia}">${urgLabel}</span></td>
+      <td><span class="est-badge est-${t.estado==='no_comenzado'?'no':t.estado==='en_progreso'?'prog':'done'}">${estLabel}</span></td>
     </tr>`;
-  }).join('')||`<tr><td colspan="6" style="text-align:center;color:#aaa;padding:24px;">Sin tareas</td></tr>`;
+  }).join('')||`<tr><td colspan="4" style="text-align:center;color:#aaa;padding:24px;">Sin tareas</td></tr>`;
 }
 
 function updateTareaField(id,field,value){
