@@ -481,6 +481,23 @@ select.form-control{background-image:url("data:image/svg+xml,%3Csvg xmlns='http:
     <div class="fin-row" style="font-size:16px;font-weight:800;margin-top:4px;"><span>Utilidad Neta</span><span id="fin-util-neta" style="color:var(--green);">$0</span></div>
     <div class="fin-row"><span class="fin-label">Recuperado de inversión</span><span class="fin-val" id="fin-recuperado">0%</span></div>
   </div>
+
+  <div class="card">
+    <div class="card-title" style="margin-bottom:4px;">Deudas del negocio con socios</div>
+    <div class="card-sub" style="margin-bottom:12px;">Gastos que pagaron de su propio bolsillo</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+      <div style="background:#fdf0ef;border-radius:12px;padding:14px;text-align:center;">
+        <div style="font-size:11px;color:#7D2027;font-weight:700;margin-bottom:6px;">👩 Isabella</div>
+        <div style="font-size:22px;font-weight:800;color:#7D2027;" id="fin-deuda-isabella">$0</div>
+        <div style="font-size:10px;color:#aaa;margin-top:4px;">el negocio le debe</div>
+      </div>
+      <div style="background:#eaf4fb;border-radius:12px;padding:14px;text-align:center;">
+        <div style="font-size:11px;color:#5FA8C2;font-weight:700;margin-bottom:6px;">👨 Jacobo</div>
+        <div style="font-size:22px;font-weight:800;color:#5FA8C2;" id="fin-deuda-jacobo">$0</div>
+        <div style="font-size:10px;color:#aaa;margin-top:4px;">el negocio le debe</div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- INVENTARIO -->
@@ -682,6 +699,15 @@ select.form-control{background-image:url("data:image/svg+xml,%3Csvg xmlns='http:
     <input type="hidden" id="gasto-edit-idx" value="-1">
     <div class="form-group"><label class="form-label">Descripción</label><input id="gasto-desc" class="form-control" type="text" placeholder="Ej: Arriendo, publicidad…"></div>
     <div class="form-group"><label class="form-label">Monto mensual</label><input id="gasto-monto" class="form-control" type="text" inputmode="numeric" placeholder="0"></div>
+    <div class="form-group">
+      <label class="form-label">¿Quién pagó?</label>
+      <input type="hidden" id="gasto-pagador" value="negocio">
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
+        <div class="pago-opt sel" id="gpag-negocio" onclick="selGastoPagador('negocio')">🏦 Negocio</div>
+        <div class="pago-opt" id="gpag-isabella" onclick="selGastoPagador('isabella')" style="color:#7D2027;">👩 Isabella</div>
+        <div class="pago-opt" id="gpag-jacobo" onclick="selGastoPagador('jacobo')" style="color:#5FA8C2;">👨 Jacobo</div>
+      </div>
+    </div>
     <button class="btn btn-primary" onclick="guardarGasto()">Guardar</button>
     <button class="btn btn-secondary" style="margin-top:8px;" onclick="closeGastoModal()">Cancelar</button>
   </div>
@@ -695,6 +721,15 @@ select.form-control{background-image:url("data:image/svg+xml,%3Csvg xmlns='http:
     <input type="hidden" id="cvar-edit-idx" value="-1">
     <div class="form-group"><label class="form-label">Descripción</label><input id="cvar-desc" class="form-control" type="text" placeholder="Ej: Empaque, publicidad, materiales…"></div>
     <div class="form-group"><label class="form-label">Monto este mes</label><input id="cvar-monto" class="form-control" type="text" inputmode="numeric" placeholder="0"></div>
+    <div class="form-group">
+      <label class="form-label">¿Quién pagó?</label>
+      <input type="hidden" id="cvar-pagador" value="negocio">
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
+        <div class="pago-opt sel" id="cvpag-negocio" onclick="selCvarPagador('negocio')">🏦 Negocio</div>
+        <div class="pago-opt" id="cvpag-isabella" onclick="selCvarPagador('isabella')" style="color:#7D2027;">👩 Isabella</div>
+        <div class="pago-opt" id="cvpag-jacobo" onclick="selCvarPagador('jacobo')" style="color:#5FA8C2;">👨 Jacobo</div>
+      </div>
+    </div>
     <button class="btn btn-primary" onclick="guardarCostoVar()">Guardar</button>
     <button class="btn btn-secondary" style="margin-top:8px;" onclick="closeCostoVarModal()">Cancelar</button>
   </div>
@@ -1091,9 +1126,10 @@ function renderFinanzas(){
   const gastosFijos=fin.gastosFijos||[];
   const totalFijos=gastosFijos.reduce((s,g)=>s+(g.monto||0),0);
   document.getElementById('fin-total-gastos').textContent=fmt(totalFijos);
+  const pagadorBadge=p=>p==='isabella'?'<span style="font-size:10px;font-weight:700;color:#7D2027;background:#fdf0ef;padding:2px 7px;border-radius:8px;">👩 Isabella</span>':p==='jacobo'?'<span style="font-size:10px;font-weight:700;color:#5FA8C2;background:#eaf4fb;padding:2px 7px;border-radius:8px;">👨 Jacobo</span>':'<span style="font-size:10px;color:#888;background:#f5f5f5;padding:2px 7px;border-radius:8px;">🏦 Negocio</span>';
   document.getElementById('lista-gastos').innerHTML=gastosFijos.map((g,i)=>`
     <div class="fin-row">
-      <span class="fin-label">${g.desc}</span>
+      <div><span class="fin-label">${g.desc}</span><div style="margin-top:3px;">${pagadorBadge(g.pagador||'negocio')}</div></div>
       <div style="display:flex;align-items:center;gap:10px;">
         <span class="fin-val">${fmt(g.monto)}</span>
         <button onclick="editarGasto(${i})" style="background:none;border:none;color:#888;cursor:pointer;">✏️</button>
@@ -1106,7 +1142,7 @@ function renderFinanzas(){
   document.getElementById('fin-total-costos-var').textContent=fmt(totalVar);
   document.getElementById('lista-costos-var').innerHTML=costosVar.map((g,i)=>`
     <div class="fin-row">
-      <span class="fin-label">${g.desc}</span>
+      <div><span class="fin-label">${g.desc}</span><div style="margin-top:3px;">${pagadorBadge(g.pagador||'negocio')}</div></div>
       <div style="display:flex;align-items:center;gap:10px;">
         <span class="fin-val">${fmt(g.monto)}</span>
         <button onclick="editarCostoVar(${i})" style="background:none;border:none;color:#888;cursor:pointer;">✏️</button>
@@ -1131,6 +1167,13 @@ function renderFinanzas(){
   document.getElementById('fin-costos-var-total').textContent=fmt(totalVar);
   document.getElementById('fin-util-neta').textContent=fmt(util);
   document.getElementById('fin-recuperado').textContent=rec+'%';
+
+  // Deudas con socios
+  const todosGastos=[...(fin.gastosFijos||[]),...(fin.costosVar||[])];
+  const deudaIsabella=todosGastos.filter(g=>g.pagador==='isabella').reduce((s,g)=>s+(g.monto||0),0);
+  const deudaJacobo=todosGastos.filter(g=>g.pagador==='jacobo').reduce((s,g)=>s+(g.monto||0),0);
+  document.getElementById('fin-deuda-isabella').textContent=fmt(deudaIsabella);
+  document.getElementById('fin-deuda-jacobo').textContent=fmt(deudaJacobo);
 
   // PE chart
   const costoVarProm=ventas.length?(prod+trans)/ventas.length:0;
@@ -1198,29 +1241,35 @@ function renderFinanzas(){
   });
 }
 function guardarInversion(){const fin=getFinanzas();fin.inversionInicial=parsePeso(document.getElementById('fin-inversion').value);setFinanzas(fin);renderFinanzas();}
-function openGastoModal(){document.getElementById('gasto-edit-idx').value=-1;document.getElementById('gasto-desc').value='';document.getElementById('gasto-monto').value='';document.getElementById('modal-gasto').classList.add('show');}
-function openCostoVarModal(){document.getElementById('cvar-edit-idx').value=-1;document.getElementById('cvar-desc').value='';document.getElementById('cvar-monto').value='';document.getElementById('modal-costo-var').classList.add('show');}
+
+function selGastoPagador(p){document.getElementById('gasto-pagador').value=p;['negocio','isabella','jacobo'].forEach(x=>document.getElementById('gpag-'+x).classList.toggle('sel',x===p));}
+function selCvarPagador(p){document.getElementById('cvar-pagador').value=p;['negocio','isabella','jacobo'].forEach(x=>document.getElementById('cvpag-'+x).classList.toggle('sel',x===p));}
+
+function openGastoModal(){document.getElementById('gasto-edit-idx').value=-1;document.getElementById('gasto-desc').value='';document.getElementById('gasto-monto').value='';selGastoPagador('negocio');document.getElementById('modal-gasto').classList.add('show');}
+function openCostoVarModal(){document.getElementById('cvar-edit-idx').value=-1;document.getElementById('cvar-desc').value='';document.getElementById('cvar-monto').value='';selCvarPagador('negocio');document.getElementById('modal-costo-var').classList.add('show');}
 function closeCostoVarModal(){document.getElementById('modal-costo-var').classList.remove('show');}
-function editarCostoVar(i){const fin=getFinanzas();const g=fin.costosVar[i];document.getElementById('cvar-edit-idx').value=i;document.getElementById('cvar-desc').value=g.desc;document.getElementById('cvar-monto').value=g.monto;document.getElementById('modal-costo-var').classList.add('show');}
+function editarCostoVar(i){const fin=getFinanzas();const g=fin.costosVar[i];document.getElementById('cvar-edit-idx').value=i;document.getElementById('cvar-desc').value=g.desc;document.getElementById('cvar-monto').value=g.monto;selCvarPagador(g.pagador||'negocio');document.getElementById('modal-costo-var').classList.add('show');}
 function eliminarCostoVar(i){const fin=getFinanzas();fin.costosVar.splice(i,1);setFinanzas(fin);renderFinanzas();}
 function guardarCostoVar(){
   const desc=document.getElementById('cvar-desc').value.trim();
   const monto=parsePeso(document.getElementById('cvar-monto').value);
   if(!desc||!monto){showToast('Completa todos los campos','err');return;}
+  const pagador=document.getElementById('cvar-pagador').value||'negocio';
   const fin=getFinanzas();fin.costosVar=fin.costosVar||[];
   const idx=parseInt(document.getElementById('cvar-edit-idx').value);
-  if(idx>=0)fin.costosVar[idx]={desc,monto};else fin.costosVar.push({desc,monto});
+  if(idx>=0)fin.costosVar[idx]={desc,monto,pagador};else fin.costosVar.push({desc,monto,pagador});
   setFinanzas(fin);closeCostoVarModal();renderFinanzas();showToast('✓ Guardado','ok');
 }
 function closeGastoModal(){document.getElementById('modal-gasto').classList.remove('show');}
-function editarGasto(i){const fin=getFinanzas();const g=fin.gastosFijos[i];document.getElementById('gasto-edit-idx').value=i;document.getElementById('gasto-desc').value=g.desc;document.getElementById('gasto-monto').value=g.monto;document.getElementById('modal-gasto').classList.add('show');}
+function editarGasto(i){const fin=getFinanzas();const g=fin.gastosFijos[i];document.getElementById('gasto-edit-idx').value=i;document.getElementById('gasto-desc').value=g.desc;document.getElementById('gasto-monto').value=g.monto;selGastoPagador(g.pagador||'negocio');document.getElementById('modal-gasto').classList.add('show');}
 function eliminarGasto(i){const fin=getFinanzas();fin.gastosFijos.splice(i,1);setFinanzas(fin);renderFinanzas();}
 function guardarGasto(){
   const desc=document.getElementById('gasto-desc').value.trim();
   const monto=parsePeso(document.getElementById('gasto-monto').value);
   if(!desc||!monto){showToast('Completa todos los campos','err');return;}
+  const pagador=document.getElementById('gasto-pagador').value||'negocio';
   const fin=getFinanzas();const idx=parseInt(document.getElementById('gasto-edit-idx').value);
-  if(idx>=0)fin.gastosFijos[idx]={desc,monto};else fin.gastosFijos.push({desc,monto});
+  if(idx>=0)fin.gastosFijos[idx]={desc,monto,pagador};else fin.gastosFijos.push({desc,monto,pagador});
   setFinanzas(fin);closeGastoModal();renderFinanzas();showToast('✓ Gasto guardado','ok');
 }
 
