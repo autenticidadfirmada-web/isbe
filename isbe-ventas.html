@@ -160,6 +160,22 @@ select.form-control{background-image:url("data:image/svg+xml,%3Csvg xmlns='http:
   .hdr-actions .hdr-btn span{display:none;}
 }
 
+/* CALENDARIO */
+.cal-nav{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-bottom:10px;}
+.cal-hdr{text-align:center;font-size:10px;font-weight:700;color:var(--sub);padding:4px 0;text-transform:uppercase;}
+.cal-cell{min-height:46px;padding:4px;border-radius:8px;background:#fff;cursor:pointer;box-shadow:0 1px 2px rgba(0,0,0,.04);}
+.cal-cell.other{opacity:.25;cursor:default;background:transparent;box-shadow:none;}
+.cal-cell.today{background:var(--red-light);border:1.5px solid var(--red);}
+.cal-cell.selected{border:2px solid #7D2027;}
+.cal-num{font-size:11px;font-weight:700;line-height:1;}
+.cal-dots{display:flex;flex-wrap:wrap;gap:2px;margin-top:3px;}
+.cal-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0;}
+.cal-day-tasks{background:#fff;border-radius:14px;padding:14px;margin-top:10px;box-shadow:0 1px 3px rgba(0,0,0,.06);}
+.vista-toggle{display:flex;gap:6px;margin-bottom:12px;}
+.vista-btn{flex:1;padding:8px;border-radius:10px;border:1.5px solid var(--border);background:#fff;font-size:13px;font-weight:600;color:#888;cursor:pointer;text-align:center;}
+.vista-btn.active{background:var(--red);color:#fff;border-color:var(--red);}
+
 /* TAREAS */
 .urg-badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700;letter-spacing:.3px;}
 .urg-alta{background:#fdf0ef;color:#b03a2e;}
@@ -188,7 +204,7 @@ select.form-control{background-image:url("data:image/svg+xml,%3Csvg xmlns='http:
     <div class="sb-item" onclick="navTo('historial')"><span class="sb-icon">📋</span>Historial</div>
     <div class="sb-item" onclick="navTo('finanzas')"><span class="sb-icon">💰</span>Finanzas</div>
     <div class="sb-item" onclick="navTo('inventario')"><span class="sb-icon">🗃️</span>Inventario</div>
-    <div class="sb-item" onclick="navTo('socios')"><span class="sb-icon">🤝</span>Socios</div>
+    <div class="sb-item" onclick="navTo('socios')"><span class="sb-icon">👩</span>Mi cuenta</div>
     <div class="sb-item" onclick="navTo('tareas')"><span class="sb-icon">✅</span>Tareas</div>
     <div class="sb-item" onclick="navTo('reportes')"><span class="sb-icon">📈</span>Reportes</div>
   </div>
@@ -485,17 +501,12 @@ select.form-control{background-image:url("data:image/svg+xml,%3Csvg xmlns='http:
   <div class="card">
     <div class="card-title" style="margin-bottom:4px;">Deudas del negocio con socios</div>
     <div class="card-sub" style="margin-bottom:12px;">Gastos que pagaron de su propio bolsillo</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-      <div style="background:#fdf0ef;border-radius:12px;padding:14px;text-align:center;">
-        <div style="font-size:11px;color:#7D2027;font-weight:700;margin-bottom:6px;">👩 Isabella</div>
-        <div style="font-size:22px;font-weight:800;color:#7D2027;" id="fin-deuda-isabella">$0</div>
-        <div style="font-size:10px;color:#aaa;margin-top:4px;">el negocio le debe</div>
+    <div style="display:flex;justify-content:space-between;align-items:center;background:#fdf0ef;border-radius:12px;padding:16px;">
+      <div>
+        <div style="font-size:11px;color:#7D2027;font-weight:700;">👩 Isabella — gastos de mi bolsillo</div>
+        <div style="font-size:11px;color:#aaa;margin-top:2px;">El negocio me debe reembolsar</div>
       </div>
-      <div style="background:#eaf4fb;border-radius:12px;padding:14px;text-align:center;">
-        <div style="font-size:11px;color:#5FA8C2;font-weight:700;margin-bottom:6px;">👨 Jacobo</div>
-        <div style="font-size:22px;font-weight:800;color:#5FA8C2;" id="fin-deuda-jacobo">$0</div>
-        <div style="font-size:10px;color:#aaa;margin-top:4px;">el negocio le debe</div>
-      </div>
+      <div style="font-size:26px;font-weight:800;color:#7D2027;" id="fin-deuda-isabella">$0</div>
     </div>
   </div>
 </div>
@@ -527,47 +538,40 @@ select.form-control{background-image:url("data:image/svg+xml,%3Csvg xmlns='http:
   </div>
 </div>
 
-<!-- SOCIOS -->
+<!-- MI CUENTA -->
 <div class="sec" id="sec-socios">
-  <div class="sec-hdr"><div class="sec-title">Socios</div></div>
+  <div class="sec-hdr"><div class="sec-title">Mi cuenta</div></div>
 
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;">
-    <div class="socio-card">
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
-        <div class="soc-avatar" id="soc1-avatar" style="background:var(--red);">S</div>
-        <div><div style="font-size:15px;font-weight:800;" id="soc1-nombre">Socio 1</div><div style="font-size:12px;color:var(--sub);">50%</div></div>
-      </div>
-      <input id="soc1-input" class="input-inline" type="text" placeholder="Nombre" oninput="guardarNombresSocios()">
-    </div>
-    <div class="socio-card">
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
-        <div class="soc-avatar" id="soc2-avatar" style="background:#2c3e50;">S</div>
-        <div><div style="font-size:15px;font-weight:800;" id="soc2-nombre">Socio 2</div><div style="font-size:12px;color:var(--sub);">50%</div></div>
-      </div>
-      <input id="soc2-input" class="input-inline" type="text" placeholder="Nombre" oninput="guardarNombresSocios()">
+  <!-- Perfil -->
+  <div class="card" style="display:flex;align-items:center;gap:16px;padding:20px;">
+    <div style="width:56px;height:56px;border-radius:50%;background:var(--red);display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:800;color:#fff;flex-shrink:0;">I</div>
+    <div>
+      <div style="font-size:18px;font-weight:800;">Isabella</div>
+      <div style="font-size:13px;color:var(--sub);margin-top:2px;">Fundadora · 100% ISBE</div>
     </div>
   </div>
 
-  <div class="card">
-    <div class="card-title" style="margin-bottom:12px;">Resumen de utilidades</div>
-    <div class="fin-row"><span class="fin-label">Utilidad neta total</span><span class="fin-val" id="soc-util-total">$0</span></div>
-    <div class="fin-row"><span class="fin-label">Fondo de reserva</span><span class="fin-val" style="color:#e67e22;">$2.000.000</span></div>
-    <div class="fin-row"><span class="fin-label">Ya repartido</span><span class="fin-val" id="soc-ya-repartido">$0</span></div>
-    <div class="fin-row" style="font-weight:800;font-size:15px;"><span>Disponible</span><span id="soc-disponible" style="color:var(--green);">$0</span></div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px;">
-      <div style="text-align:center;padding:14px;background:var(--red-light);border-radius:12px;">
-        <div style="font-size:11px;color:var(--sub);margin-bottom:4px;" id="rep-soc1-nombre">Socio 1</div>
-        <div style="font-size:22px;font-weight:800;color:var(--red);" id="soc-part1">$0</div>
-      </div>
-      <div style="text-align:center;padding:14px;background:#eaf4fb;border-radius:12px;">
-        <div style="font-size:11px;color:var(--sub);margin-bottom:4px;" id="rep-soc2-nombre">Socio 2</div>
-        <div style="font-size:22px;font-weight:800;color:#2c3e50;" id="soc-part2">$0</div>
-      </div>
+  <!-- KPIs financieros -->
+  <div class="kpi-grid" style="margin-bottom:14px;">
+    <div class="kpi-card"><div class="kpi-label">Utilidad neta</div><div class="kpi-value green" id="soc-util-total">$0</div><div class="kpi-sub">acumulada</div></div>
+    <div class="kpi-card"><div class="kpi-label">Ya retirado</div><div class="kpi-value" id="soc-ya-repartido">$0</div><div class="kpi-sub">en retiros</div></div>
+    <div class="kpi-card"><div class="kpi-label">Fondo reserva</div><div class="kpi-value" style="color:#e67e22;">$2.000.000</div><div class="kpi-sub">siempre en caja</div></div>
+    <div class="kpi-card"><div class="kpi-label">Disponible</div><div class="kpi-value red" id="soc-disponible">$0</div><div class="kpi-sub">para retirar</div></div>
+  </div>
+
+  <!-- Lo que el negocio me debe -->
+  <div class="card" style="margin-bottom:14px;">
+    <div class="card-title" style="margin-bottom:4px;">Lo que el negocio me debe</div>
+    <div class="card-sub" style="margin-bottom:12px;">Gastos que pagué de mi bolsillo</div>
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <div style="font-size:13px;color:#555;">Total a reembolsar</div>
+      <div style="font-size:24px;font-weight:800;color:var(--red);" id="fin-deuda-isabella">$0</div>
     </div>
   </div>
 
+  <!-- Historial de retiros -->
   <div class="sec-hdr" style="margin-top:4px;">
-    <div style="font-size:16px;font-weight:800;">Historial de repartos</div>
+    <div style="font-size:16px;font-weight:800;">Historial de retiros</div>
     <button class="btn btn-primary btn-sm" onclick="openRepartoModal()">+ Registrar</button>
   </div>
   <div id="lista-repartos"></div>
@@ -580,6 +584,14 @@ select.form-control{background-image:url("data:image/svg+xml,%3Csvg xmlns='http:
     <button class="btn btn-primary btn-sm" onclick="openTareaModal()">+ Nueva</button>
   </div>
 
+  <!-- Toggle Lista / Calendario -->
+  <div class="vista-toggle">
+    <button class="vista-btn active" id="vbtn-lista" onclick="setTareaVista('lista')">📋 Lista</button>
+    <button class="vista-btn" id="vbtn-calendario" onclick="setTareaVista('calendario')">📅 Calendario</button>
+  </div>
+
+  <!-- Vista Lista -->
+  <div id="tar-vista-lista">
   <!-- KPIs -->
   <div class="kpi-grid" style="grid-template-columns:1fr 1fr 1fr;margin-bottom:12px;">
     <div class="kpi-card">
@@ -616,6 +628,21 @@ select.form-control{background-image:url("data:image/svg+xml,%3Csvg xmlns='http:
 
   <!-- Tarjetas de tareas -->
   <div id="tabla-tareas"></div>
+  </div><!-- /tar-vista-lista -->
+
+  <!-- Vista Calendario -->
+  <div id="tar-vista-calendario" style="display:none;">
+    <div class="card">
+      <div class="cal-nav">
+        <button onclick="calNavMes(-1)" style="background:none;border:none;font-size:22px;cursor:pointer;color:var(--text);padding:0 4px;">‹</button>
+        <div style="font-weight:800;font-size:16px;" id="cal-mes-label">Julio 2026</div>
+        <button onclick="calNavMes(1)" style="background:none;border:none;font-size:22px;cursor:pointer;color:var(--text);padding:0 4px;">›</button>
+      </div>
+      <div class="cal-grid" id="cal-headers"></div>
+      <div class="cal-grid" id="cal-days"></div>
+    </div>
+    <div id="cal-day-tasks"></div>
+  </div>
 </div>
 
 <!-- REPORTES -->
@@ -702,10 +729,9 @@ select.form-control{background-image:url("data:image/svg+xml,%3Csvg xmlns='http:
     <div class="form-group">
       <label class="form-label">¿Quién pagó?</label>
       <input type="hidden" id="gasto-pagador" value="negocio">
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
-        <div class="pago-opt sel" id="gpag-negocio" onclick="selGastoPagador('negocio')">🏦 Negocio</div>
-        <div class="pago-opt" id="gpag-isabella" onclick="selGastoPagador('isabella')" style="color:#7D2027;">👩 Isabella</div>
-        <div class="pago-opt" id="gpag-jacobo" onclick="selGastoPagador('jacobo')" style="color:#5FA8C2;">👨 Jacobo</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+        <div class="pago-opt sel" id="gpag-negocio" onclick="selGastoPagador('negocio')">🏦 Caja del negocio</div>
+        <div class="pago-opt" id="gpag-isabella" onclick="selGastoPagador('isabella')" style="color:#7D2027;">👩 Lo pagué yo</div>
       </div>
     </div>
     <button class="btn btn-primary" onclick="guardarGasto()">Guardar</button>
@@ -724,10 +750,9 @@ select.form-control{background-image:url("data:image/svg+xml,%3Csvg xmlns='http:
     <div class="form-group">
       <label class="form-label">¿Quién pagó?</label>
       <input type="hidden" id="cvar-pagador" value="negocio">
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
-        <div class="pago-opt sel" id="cvpag-negocio" onclick="selCvarPagador('negocio')">🏦 Negocio</div>
-        <div class="pago-opt" id="cvpag-isabella" onclick="selCvarPagador('isabella')" style="color:#7D2027;">👩 Isabella</div>
-        <div class="pago-opt" id="cvpag-jacobo" onclick="selCvarPagador('jacobo')" style="color:#5FA8C2;">👨 Jacobo</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+        <div class="pago-opt sel" id="cvpag-negocio" onclick="selCvarPagador('negocio')">🏦 Caja del negocio</div>
+        <div class="pago-opt" id="cvpag-isabella" onclick="selCvarPagador('isabella')" style="color:#7D2027;">👩 Lo pagué yo</div>
       </div>
     </div>
     <button class="btn btn-primary" onclick="guardarCostoVar()">Guardar</button>
@@ -789,8 +814,6 @@ select.form-control{background-image:url("data:image/svg+xml,%3Csvg xmlns='http:
       <label class="form-label">Responsable</label>
       <select id="tar-resp" class="form-control">
         <option value="Isabella">Isabella</option>
-        <option value="Jacobo">Jacobo</option>
-        <option value="Ambos">Ambos</option>
       </select>
     </div>
     <div class="form-group">
@@ -892,8 +915,8 @@ function guardarSyncURL(){
 }
 
 // NAV
-const NAVS={dashboard:'Dashboard',nueva:'Nueva Venta',pedidos:'Pedidos',historial:'Historial',finanzas:'Finanzas',inventario:'Inventario',socios:'Socios',tareas:'Tareas',reportes:'Reportes'};
-const SUBS={dashboard:'Resumen general de tu negocio',nueva:'Registra una nueva venta',pedidos:'Ventas pendientes de entrega',historial:'Todas las ventas registradas',finanzas:'Inversión y punto de equilibrio',inventario:'Control de stock',socios:'Distribución 50/50',tareas:'Plan 25 jun – 25 jul',reportes:'Análisis de ventas y tendencias'};
+const NAVS={dashboard:'Dashboard',nueva:'Nueva Venta',pedidos:'Pedidos',historial:'Historial',finanzas:'Finanzas',inventario:'Inventario',socios:'Mi cuenta',tareas:'Tareas',reportes:'Reportes'};
+const SUBS={dashboard:'Resumen general de tu negocio',nueva:'Registra una nueva venta',pedidos:'Ventas pendientes de entrega',historial:'Todas las ventas registradas',finanzas:'Inversión y punto de equilibrio',inventario:'Control de stock',socios:'Tu inversión y retiros',tareas:'Plan 25 jun – 25 jul',reportes:'Análisis de ventas y tendencias'};
 function navTo(id){
   Object.keys(NAVS).forEach(k=>{
     document.getElementById('sec-'+k).classList.toggle('active',k===id);
@@ -1126,7 +1149,7 @@ function renderFinanzas(){
   const gastosFijos=fin.gastosFijos||[];
   const totalFijos=gastosFijos.reduce((s,g)=>s+(g.monto||0),0);
   document.getElementById('fin-total-gastos').textContent=fmt(totalFijos);
-  const pagadorBadge=p=>p==='isabella'?'<span style="font-size:10px;font-weight:700;color:#7D2027;background:#fdf0ef;padding:2px 7px;border-radius:8px;">👩 Isabella</span>':p==='jacobo'?'<span style="font-size:10px;font-weight:700;color:#5FA8C2;background:#eaf4fb;padding:2px 7px;border-radius:8px;">👨 Jacobo</span>':'<span style="font-size:10px;color:#888;background:#f5f5f5;padding:2px 7px;border-radius:8px;">🏦 Negocio</span>';
+  const pagadorBadge=p=>p==='isabella'?'<span style="font-size:10px;font-weight:700;color:#7D2027;background:#fdf0ef;padding:2px 7px;border-radius:8px;">👩 Yo</span>':'<span style="font-size:10px;color:#888;background:#f5f5f5;padding:2px 7px;border-radius:8px;">🏦 Negocio</span>';
   document.getElementById('lista-gastos').innerHTML=gastosFijos.map((g,i)=>`
     <div class="fin-row">
       <div><span class="fin-label">${g.desc}</span><div style="margin-top:3px;">${pagadorBadge(g.pagador||'negocio')}</div></div>
@@ -1171,9 +1194,7 @@ function renderFinanzas(){
   // Deudas con socios
   const todosGastos=[...(fin.gastosFijos||[]),...(fin.costosVar||[])];
   const deudaIsabella=todosGastos.filter(g=>g.pagador==='isabella').reduce((s,g)=>s+(g.monto||0),0);
-  const deudaJacobo=todosGastos.filter(g=>g.pagador==='jacobo').reduce((s,g)=>s+(g.monto||0),0);
-  document.getElementById('fin-deuda-isabella').textContent=fmt(deudaIsabella);
-  document.getElementById('fin-deuda-jacobo').textContent=fmt(deudaJacobo);
+  document.querySelectorAll('#fin-deuda-isabella').forEach(el=>el.textContent=fmt(deudaIsabella));
 
   // PE chart
   const costoVarProm=ventas.length?(prod+trans)/ventas.length:0;
@@ -1242,8 +1263,8 @@ function renderFinanzas(){
 }
 function guardarInversion(){const fin=getFinanzas();fin.inversionInicial=parsePeso(document.getElementById('fin-inversion').value);setFinanzas(fin);renderFinanzas();}
 
-function selGastoPagador(p){document.getElementById('gasto-pagador').value=p;['negocio','isabella','jacobo'].forEach(x=>document.getElementById('gpag-'+x).classList.toggle('sel',x===p));}
-function selCvarPagador(p){document.getElementById('cvar-pagador').value=p;['negocio','isabella','jacobo'].forEach(x=>document.getElementById('cvpag-'+x).classList.toggle('sel',x===p));}
+function selGastoPagador(p){document.getElementById('gasto-pagador').value=p;['negocio','isabella'].forEach(x=>document.getElementById('gpag-'+x).classList.toggle('sel',x===p));}
+function selCvarPagador(p){document.getElementById('cvar-pagador').value=p;['negocio','isabella'].forEach(x=>document.getElementById('cvpag-'+x).classList.toggle('sel',x===p));}
 
 function openGastoModal(){document.getElementById('gasto-edit-idx').value=-1;document.getElementById('gasto-desc').value='';document.getElementById('gasto-monto').value='';selGastoPagador('negocio');document.getElementById('modal-gasto').classList.add('show');}
 function openCostoVarModal(){document.getElementById('cvar-edit-idx').value=-1;document.getElementById('cvar-desc').value='';document.getElementById('cvar-monto').value='';selCvarPagador('negocio');document.getElementById('modal-costo-var').classList.add('show');}
@@ -1316,21 +1337,10 @@ function guardarInventario(){
   setInventario(inv);closeInvModal();renderInventario();showToast('✓ Guardado','ok');
 }
 
-// SOCIOS
+// MI CUENTA
 const RESERVA=2000000;
 function renderSocios(){
   const soc=getSocios();
-  const n=soc.nombres||['Socio 1','Socio 2'];
-  document.getElementById('soc1-nombre').textContent=n[0];
-  document.getElementById('soc2-nombre').textContent=n[1];
-  document.getElementById('soc1-avatar').textContent=n[0].charAt(0).toUpperCase();
-  document.getElementById('soc2-avatar').textContent=n[1].charAt(0).toUpperCase();
-  document.getElementById('rep-soc1-nombre').textContent=n[0];
-  document.getElementById('rep-soc2-nombre').textContent=n[1];
-  const i1=document.getElementById('soc1-input'),i2=document.getElementById('soc2-input');
-  if(document.activeElement!==i1)i1.value=n[0]==='Socio 1'?'':n[0];
-  if(document.activeElement!==i2)i2.value=n[1]==='Socio 2'?'':n[1];
-
   const ventas=getVentas().filter(v=>v.estado!=='cancelada');
   const fin=getFinanzas();
   const fijos=(fin.gastosFijos||[]).reduce((s,g)=>s+(g.monto||0),0);
@@ -1341,39 +1351,23 @@ function renderSocios(){
   const repartos=soc.repartos||[];
   const yaRep=repartos.reduce((s,r)=>s+(r.monto||0),0);
   const disp=Math.max(0,utilTotal-yaRep-RESERVA);
+  const deudaYo=[...(fin.gastosFijos||[]),...(fin.costosVar||[])].filter(g=>g.pagador==='isabella').reduce((s,g)=>s+(g.monto||0),0);
 
   document.getElementById('soc-util-total').textContent=fmt(utilTotal);
   document.getElementById('soc-ya-repartido').textContent=fmt(yaRep);
   document.getElementById('soc-disponible').textContent=fmt(disp);
-  document.getElementById('soc-part1').textContent=fmt(disp/2);
-  document.getElementById('soc-part2').textContent=fmt(disp/2);
+  if(document.getElementById('fin-deuda-isabella'))document.getElementById('fin-deuda-isabella').textContent=fmt(deudaYo);
 
   document.getElementById('lista-repartos').innerHTML=[...repartos].reverse().map((r,i)=>`
     <div class="card" style="margin-bottom:10px;">
       <div style="display:flex;justify-content:space-between;align-items:center;">
         <div>
-          <div style="font-size:14px;font-weight:700;">${fmt(r.monto)} repartidos</div>
+          <div style="font-size:14px;font-weight:700;">${fmt(r.monto)} retirados</div>
           <div style="font-size:12px;color:#888;margin-top:2px;">${new Date(r.fecha+'T12:00:00').toLocaleDateString('es-CO',{day:'numeric',month:'long',year:'numeric'})}${r.notas?' · '+r.notas:''}</div>
         </div>
-        <div style="text-align:right;">
-          <div style="font-size:13px;color:var(--red);font-weight:700;">${fmt(r.monto/2)} c/u</div>
-          <button onclick="eliminarReparto(${repartos.length-1-i})" style="background:none;border:none;color:#c0392b;font-size:12px;cursor:pointer;margin-top:4px;">Eliminar</button>
-        </div>
+        <button onclick="eliminarReparto(${repartos.length-1-i})" style="background:none;border:none;color:#c0392b;font-size:12px;cursor:pointer;">Eliminar</button>
       </div>
-    </div>`).join('')||'<div class="empty"><div class="empty-icon">🤝</div><div>Sin repartos</div></div>';
-}
-
-function guardarNombresSocios(){
-  const soc=getSocios();
-  const n1=document.getElementById('soc1-input').value||'Socio 1';
-  const n2=document.getElementById('soc2-input').value||'Socio 2';
-  soc.nombres[0]=n1; soc.nombres[1]=n2; setSocios(soc);
-  document.getElementById('soc1-nombre').textContent=n1;
-  document.getElementById('soc2-nombre').textContent=n2;
-  document.getElementById('soc1-avatar').textContent=n1.charAt(0).toUpperCase();
-  document.getElementById('soc2-avatar').textContent=n2.charAt(0).toUpperCase();
-  document.getElementById('rep-soc1-nombre').textContent=n1;
-  document.getElementById('rep-soc2-nombre').textContent=n2;
+    </div>`).join('')||'<div class="empty"><div class="empty-icon">👩</div><div>Sin retiros registrados</div></div>';
 }
 
 function openRepartoModal(){document.getElementById('rep-fecha').value=fechaHoy();document.getElementById('rep-monto').value='';document.getElementById('rep-notas').value='';document.getElementById('modal-reparto').classList.add('show');}
@@ -1554,21 +1548,21 @@ function renderReportes(){
 }
 
 // TAREAS
-const TAREAS_KEY='isbe_tareas_v1';
+const TAREAS_KEY='isbe_tareas_v2';
 let chartTarUrg=null,chartTarResp=null,chartTarEst=null;
 const TAREAS_DEFAULT=[
   {id:1,tarea:'Idear y definir diseños para la feria',responsable:'Isabella',fecha:'2026-07-15',estado:'no_comenzado',urgencia:'alta'},
   {id:2,tarea:'Diseñar el stand (distribución, visual, materiales)',responsable:'Isabella',fecha:'2026-07-15',estado:'no_comenzado',urgencia:'alta'},
   {id:3,tarea:'Coordinar pedido con proveedor (antes del 15 jul)',responsable:'Isabella',fecha:'2026-07-15',estado:'no_comenzado',urgencia:'alta'},
-  {id:4,tarea:'Publicar contenido de stock (mín. 4 posts/semana)',responsable:'Isabella',fecha:'2026-07-25',estado:'no_comenzado',urgencia:'media'},
-  {id:5,tarea:'Stories con productos disponibles y CTA claro',responsable:'Isabella',fecha:'2026-07-25',estado:'no_comenzado',urgencia:'media'},
-  {id:6,tarea:'Reactivar clientes anteriores por DM',responsable:'Isabella',fecha:'2026-07-25',estado:'no_comenzado',urgencia:'media'},
-  {id:7,tarea:'Definir unidades y referencias para la feria',responsable:'Jacobo',fecha:'2026-07-15',estado:'no_comenzado',urgencia:'alta'},
-  {id:8,tarea:'Cotizar materiales y costos del stand',responsable:'Jacobo',fecha:'2026-07-10',estado:'no_comenzado',urgencia:'alta'},
-  {id:9,tarea:'Confirmar pedido al proveedor (antes del 15 jul)',responsable:'Jacobo',fecha:'2026-07-15',estado:'no_comenzado',urgencia:'alta'},
-  {id:10,tarea:'Responder DMs diariamente (máx. 24h)',responsable:'Jacobo',fecha:'2026-07-25',estado:'no_comenzado',urgencia:'media'},
-  {id:11,tarea:'Seguimiento a clientes que no compraron',responsable:'Jacobo',fecha:'2026-07-25',estado:'no_comenzado',urgencia:'media'},
-  {id:12,tarea:'Trackear stock y caja semanalmente',responsable:'Jacobo',fecha:'2026-07-25',estado:'no_comenzado',urgencia:'media'},
+  {id:4,tarea:'Definir unidades y referencias para la feria',responsable:'Isabella',fecha:'2026-07-15',estado:'no_comenzado',urgencia:'alta'},
+  {id:5,tarea:'Cotizar materiales y costos del stand',responsable:'Isabella',fecha:'2026-07-10',estado:'no_comenzado',urgencia:'alta'},
+  {id:6,tarea:'Confirmar pedido al proveedor (antes del 15 jul)',responsable:'Isabella',fecha:'2026-07-15',estado:'no_comenzado',urgencia:'alta'},
+  {id:7,tarea:'Publicar contenido de stock (mín. 4 posts/semana)',responsable:'Isabella',fecha:'2026-07-25',estado:'no_comenzado',urgencia:'media'},
+  {id:8,tarea:'Stories con productos disponibles y CTA claro',responsable:'Isabella',fecha:'2026-07-25',estado:'no_comenzado',urgencia:'media'},
+  {id:9,tarea:'Reactivar clientes anteriores por DM',responsable:'Isabella',fecha:'2026-07-25',estado:'no_comenzado',urgencia:'media'},
+  {id:10,tarea:'Responder DMs diariamente (máx. 24h)',responsable:'Isabella',fecha:'2026-07-25',estado:'no_comenzado',urgencia:'media'},
+  {id:11,tarea:'Seguimiento a clientes que no compraron',responsable:'Isabella',fecha:'2026-07-25',estado:'no_comenzado',urgencia:'media'},
+  {id:12,tarea:'Trackear stock y caja semanalmente',responsable:'Isabella',fecha:'2026-07-25',estado:'no_comenzado',urgencia:'media'},
 ];
 function getTareas(){try{const d=JSON.parse(localStorage.getItem(TAREAS_KEY));return d&&d.length?d:TAREAS_DEFAULT.map(t=>({...t}));}catch{return TAREAS_DEFAULT.map(t=>({...t}));}}
 function setTareas(t){localStorage.setItem(TAREAS_KEY,JSON.stringify(t));}
@@ -1630,6 +1624,105 @@ function renderTareas(){
   }).join('')||`<div style="text-align:center;color:#aaa;padding:44px 20px;">Sin tareas</div>`;
 }
 
+// CALENDARIO DE TAREAS
+let calAño=new Date().getFullYear(), calMes=new Date().getMonth(), calDiaSeleccionado=null;
+const MESES_ES=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+const DIAS_ES=['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+const urgColor={alta:'#7D2027',media:'#CF5527',baja:'#998731'};
+
+function setTareaVista(vista){
+  const lista=document.getElementById('tar-vista-lista');
+  const cal=document.getElementById('tar-vista-calendario');
+  const btnL=document.getElementById('vbtn-lista');
+  const btnC=document.getElementById('vbtn-calendario');
+  if(vista==='lista'){
+    lista.style.display='';cal.style.display='none';
+    btnL.classList.add('active');btnC.classList.remove('active');
+  } else {
+    lista.style.display='none';cal.style.display='';
+    btnL.classList.remove('active');btnC.classList.add('active');
+    calAño=new Date().getFullYear();calMes=new Date().getMonth();calDiaSeleccionado=null;
+    renderCalendario();
+  }
+}
+
+function calNavMes(delta){
+  calMes+=delta;
+  if(calMes>11){calMes=0;calAño++;}
+  if(calMes<0){calMes=11;calAño--;}
+  renderCalendario();
+}
+
+function renderCalendario(){
+  const tareas=getTareas();
+  document.getElementById('cal-mes-label').textContent=MESES_ES[calMes]+' '+calAño;
+
+  // Headers
+  const hEl=document.getElementById('cal-headers');
+  hEl.innerHTML=DIAS_ES.map(d=>`<div class="cal-hdr">${d}</div>`).join('');
+
+  // Build grid
+  const primerDia=new Date(calAño,calMes,1).getDay();
+  const diasMes=new Date(calAño,calMes+1,0).getDate();
+  const hoy=new Date();
+  const esHoy=(d)=>hoy.getFullYear()===calAño&&hoy.getMonth()===calMes&&hoy.getDate()===d;
+
+  // Map tasks by day
+  const porDia={};
+  tareas.forEach(t=>{
+    if(!t.fecha)return;
+    const f=new Date(t.fecha+'T12:00:00');
+    if(f.getFullYear()===calAño&&f.getMonth()===calMes){
+      const d=f.getDate();
+      if(!porDia[d])porDia[d]=[];
+      porDia[d].push(t);
+    }
+  });
+
+  const dEl=document.getElementById('cal-days');
+  let cells='';
+  // Empty cells before month start
+  for(let i=0;i<primerDia;i++) cells+=`<div class="cal-cell other"></div>`;
+  for(let d=1;d<=diasMes;d++){
+    const ts=porDia[d]||[];
+    const sel=calDiaSeleccionado===d;
+    const dots=ts.map(t=>`<div class="cal-dot" style="background:${urgColor[t.urgencia]||'#ccc'};"></div>`).join('');
+    cells+=`<button onclick="selCalDia(${d})" style="min-height:46px;padding:4px;border-radius:8px;background:${esHoy(d)?'var(--red-light)':'#fff'};border:${sel?'2px solid #7D2027':esHoy(d)?'1.5px solid var(--red)':'1px solid transparent'};cursor:pointer;box-shadow:0 1px 2px rgba(0,0,0,.04);text-align:left;width:100%;">
+      <div style="font-size:11px;font-weight:700;line-height:1;color:${esHoy(d)?'var(--red)':'var(--text)'};">${d}</div>
+      <div style="display:flex;flex-wrap:wrap;gap:2px;margin-top:3px;">${dots}</div>
+    </button>`;
+  }
+  dEl.innerHTML=cells;
+
+  // Show tasks for selected day
+  renderCalDayTasks();
+}
+
+function selCalDia(d){
+  calDiaSeleccionado=(calDiaSeleccionado===d)?null:d;
+  renderCalendario();
+}
+
+function renderCalDayTasks(){
+  const el=document.getElementById('cal-day-tasks');
+  if(!calDiaSeleccionado){el.innerHTML='';return;}
+  const tareas=getTareas().filter(t=>{
+    if(!t.fecha)return false;
+    const f=new Date(t.fecha+'T12:00:00');
+    return f.getFullYear()===calAño&&f.getMonth()===calMes&&f.getDate()===calDiaSeleccionado;
+  });
+  const urgLabel={alta:'Alta',media:'Media',baja:'Baja'};
+  const estLabel={no_comenzado:'⬜ No iniciado',en_progreso:'🔄 En progreso',completado:'✅ Completado'};
+  el.innerHTML=`<div class="card" style="margin-top:10px;">
+    <div style="font-size:13px;font-weight:800;margin-bottom:10px;">${DIAS_ES[new Date(calAño,calMes,calDiaSeleccionado).getDay()]} ${calDiaSeleccionado} ${MESES_ES[calMes]}</div>
+    ${tareas.length?tareas.map(t=>`
+    <button onclick="editarTarea(${t.id})" style="width:100%;background:#fafafa;border:none;border-left:3px solid ${urgColor[t.urgencia]};border-radius:0 10px 10px 0;padding:10px 12px;margin-bottom:8px;text-align:left;cursor:pointer;">
+      <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:4px;">${t.tarea}</div>
+      <div style="font-size:11px;color:#888;">${estLabel[t.estado]} · ${urgLabel[t.urgencia]}</div>
+    </button>`).join(''):'<div style="color:#aaa;font-size:13px;text-align:center;padding:16px 0;">Sin tareas este día</div>'}
+  </div>`;
+}
+
 function updateTareaField(id,field,value){
   const tareas=getTareas();
   const idx=tareas.findIndex(t=>t.id===id);
@@ -1641,7 +1734,7 @@ function openTareaModal(id){
     const t=getTareas().find(x=>x.id===id);
     if(t){document.getElementById('tar-desc').value=t.tarea;document.getElementById('tar-resp').value=t.responsable;document.getElementById('tar-fecha').value=t.fecha;document.getElementById('tar-urg').value=t.urgencia;document.getElementById('tar-est').value=t.estado;}
   } else {
-    document.getElementById('tar-desc').value='';document.getElementById('tar-resp').value='Isabela';document.getElementById('tar-fecha').value='';document.getElementById('tar-urg').value='media';document.getElementById('tar-est').value='no_comenzado';
+    document.getElementById('tar-desc').value='';document.getElementById('tar-resp').value='Isabella';document.getElementById('tar-fecha').value='';document.getElementById('tar-urg').value='media';document.getElementById('tar-est').value='no_comenzado';
   }
   document.getElementById('modal-tarea').classList.add('show');
 }
