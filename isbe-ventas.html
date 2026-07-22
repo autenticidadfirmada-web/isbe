@@ -207,6 +207,7 @@ select.form-control{background-image:url("data:image/svg+xml,%3Csvg xmlns='http:
     <div class="sb-item" onclick="navTo('socios')"><span class="sb-icon">👩</span>Mi cuenta</div>
     <div class="sb-item" onclick="navTo('tareas')"><span class="sb-icon">✅</span>Tareas</div>
     <div class="sb-item" onclick="navTo('reportes')"><span class="sb-icon">📈</span>Reportes</div>
+    <div class="sb-item" onclick="navTo('redes')"><span class="sb-icon">📸</span>Redes</div>
   </div>
 </div>
 <div id="overlay" onclick="closeSidebar()"></div>
@@ -718,6 +719,117 @@ select.form-control{background-image:url("data:image/svg+xml,%3Csvg xmlns='http:
   </div>
 </div>
 
+<!-- REDES -->
+<div class="sec" id="sec-redes">
+  <div class="sec-hdr"><div class="sec-title">Redes</div></div>
+
+  <!-- KPIs redes -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;">
+    <div class="card" style="text-align:center;">
+      <div class="card-sub">Posts totales</div>
+      <div class="card-num" id="red-total">0</div>
+    </div>
+    <div class="card" style="text-align:center;">
+      <div class="card-sub">Este mes</div>
+      <div class="card-num" id="red-mes">0</div>
+    </div>
+    <div class="card" style="text-align:center;">
+      <div class="card-sub">Alcance total</div>
+      <div class="card-num" id="red-alcance">0</div>
+    </div>
+    <div class="card" style="text-align:center;">
+      <div class="card-sub">Engagement prom.</div>
+      <div class="card-num" id="red-eng">0%</div>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="vista-toggle" style="margin-bottom:14px;">
+    <button class="vista-btn active" id="rbtn-posts" onclick="setRedesVista('posts')">📋 Posts</button>
+    <button class="vista-btn" id="rbtn-stats" onclick="setRedesVista('stats')">📊 Análisis</button>
+  </div>
+
+  <!-- Vista Posts -->
+  <div id="red-vista-posts">
+    <button onclick="openPostModal(null)" class="btn btn-primary" style="width:100%;margin-bottom:14px;">+ Registrar publicación</button>
+    <div id="lista-posts"></div>
+  </div>
+
+  <!-- Vista Stats -->
+  <div id="red-vista-stats" style="display:none;">
+    <div class="card" style="margin-bottom:12px;">
+      <div style="font-size:13px;font-weight:800;margin-bottom:10px;">🏆 Mejores posts (por alcance)</div>
+      <div id="red-top-posts"></div>
+    </div>
+    <div class="card" style="margin-bottom:12px;">
+      <div style="font-size:13px;font-weight:800;margin-bottom:10px;">📈 Orgánico vs Pauta</div>
+      <div style="display:flex;gap:12px;">
+        <div style="flex:1;text-align:center;">
+          <div style="font-size:11px;color:#888;margin-bottom:4px;">Orgánico</div>
+          <div style="font-size:22px;font-weight:800;color:#998731;" id="red-org-count">0</div>
+          <div style="font-size:11px;color:#888;" id="red-org-alc">0 alcance</div>
+        </div>
+        <div style="flex:1;text-align:center;">
+          <div style="font-size:11px;color:#888;margin-bottom:4px;">Pauta</div>
+          <div style="font-size:22px;font-weight:800;color:#7D2027;" id="red-pau-count">0</div>
+          <div style="font-size:11px;color:#888;" id="red-pau-alc">0 alcance</div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div style="font-size:13px;font-weight:800;margin-bottom:10px;">📁 Por formato</div>
+      <div id="red-por-tipo"></div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL POST -->
+<div class="modal" id="modal-post">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closePostModal()">×</button>
+    <div class="modal-title" id="post-modal-title">Nueva publicación</div>
+    <input type="hidden" id="post-edit-id">
+    <div class="form-group">
+      <label class="form-label">Fecha</label>
+      <input id="post-fecha" class="form-control" type="date">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Formato</label>
+      <select id="post-tipo" class="form-control">
+        <option value="post">Post</option>
+        <option value="reel">Reel</option>
+        <option value="story">Story</option>
+        <option value="carrusel">Carrusel</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Tipo</label>
+      <div style="display:flex;gap:8px;">
+        <button id="ptip-organico" onclick="selPostTipo('organico')" class="seg-btn sel" style="flex:1;padding:10px;border-radius:10px;border:1.5px solid #998731;background:#998731;color:#fff;font-size:13px;font-weight:700;cursor:pointer;">🌱 Orgánico</button>
+        <button id="ptip-pauta" onclick="selPostTipo('pauta')" class="seg-btn" style="flex:1;padding:10px;border-radius:10px;border:1.5px solid #ddd;background:#fff;color:#888;font-size:13px;font-weight:700;cursor:pointer;">💰 Pauta</button>
+      </div>
+      <input type="hidden" id="post-tipo-val" value="organico">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Descripción / Caption</label>
+      <textarea id="post-desc" class="form-control" rows="3" placeholder="¿De qué trata el post?"></textarea>
+    </div>
+    <div class="form-group">
+      <label class="form-label" style="font-size:12px;font-weight:700;color:#888;margin-bottom:8px;">MÉTRICAS (opcional)</label>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+        <div><label class="form-label" style="font-size:11px;">Alcance</label><input id="post-alcance" class="form-control" type="number" placeholder="0" min="0"></div>
+        <div><label class="form-label" style="font-size:11px;">Likes</label><input id="post-likes" class="form-control" type="number" placeholder="0" min="0"></div>
+        <div><label class="form-label" style="font-size:11px;">Comentarios</label><input id="post-comentarios" class="form-control" type="number" placeholder="0" min="0"></div>
+        <div><label class="form-label" style="font-size:11px;">Guardados</label><input id="post-guardados" class="form-control" type="number" placeholder="0" min="0"></div>
+        <div><label class="form-label" style="font-size:11px;">Compartidos</label><input id="post-compartidos" class="form-control" type="number" placeholder="0" min="0"></div>
+        <div><label class="form-label" style="font-size:11px;">Inversión ($)</label><input id="post-inversion" class="form-control" type="number" placeholder="0" min="0"></div>
+      </div>
+    </div>
+    <button class="btn btn-primary" onclick="guardarPost()" style="width:100%;">Guardar</button>
+    <button onclick="eliminarPost()" id="btn-eliminar-post" class="btn btn-secondary" style="width:100%;margin-top:8px;display:none;">Eliminar</button>
+  </div>
+</div>
+
 <!-- MODAL GASTO -->
 <div class="modal" id="modal-gasto">
   <div class="modal-box">
@@ -915,8 +1027,8 @@ function guardarSyncURL(){
 }
 
 // NAV
-const NAVS={dashboard:'Dashboard',nueva:'Nueva Venta',pedidos:'Pedidos',historial:'Historial',finanzas:'Finanzas',inventario:'Inventario',socios:'Mi cuenta',tareas:'Tareas',reportes:'Reportes'};
-const SUBS={dashboard:'Resumen general de tu negocio',nueva:'Registra una nueva venta',pedidos:'Ventas pendientes de entrega',historial:'Todas las ventas registradas',finanzas:'Inversión y punto de equilibrio',inventario:'Control de stock',socios:'Tu inversión y retiros',tareas:'Plan 25 jun – 25 jul',reportes:'Análisis de ventas y tendencias'};
+const NAVS={dashboard:'Dashboard',nueva:'Nueva Venta',pedidos:'Pedidos',historial:'Historial',finanzas:'Finanzas',inventario:'Inventario',socios:'Mi cuenta',tareas:'Tareas',reportes:'Reportes',redes:'Redes'};
+const SUBS={dashboard:'Resumen general de tu negocio',nueva:'Registra una nueva venta',pedidos:'Ventas pendientes de entrega',historial:'Todas las ventas registradas',finanzas:'Inversión y punto de equilibrio',inventario:'Control de stock',socios:'Tu inversión y retiros',tareas:'Plan 25 jun – 25 jul',reportes:'Análisis de ventas y tendencias',redes:'Tracker de contenido e Instagram'};
 function navTo(id){
   Object.keys(NAVS).forEach(k=>{
     document.getElementById('sec-'+k).classList.toggle('active',k===id);
@@ -933,6 +1045,7 @@ function navTo(id){
   if(id==='socios')renderSocios();
   if(id==='tareas')renderTareas();
   if(id==='reportes'){populateRepAños();populateRepSub();renderReportes();}
+  if(id==='redes')renderRedes();
 }
 function toggleSidebar(){document.getElementById('sidebar').classList.toggle('open');document.getElementById('overlay').classList.toggle('show');}
 function closeSidebar(){document.getElementById('sidebar').classList.remove('open');document.getElementById('overlay').classList.remove('show');}
@@ -1338,7 +1451,7 @@ function guardarInventario(){
 }
 
 // MI CUENTA
-const RESERVA=2000000;
+const RESERVA=1000000;
 function renderSocios(){
   const soc=getSocios();
   const ventas=getVentas().filter(v=>v.estado!=='cancelada');
@@ -1686,10 +1799,15 @@ function renderCalendario(){
   for(let d=1;d<=diasMes;d++){
     const ts=porDia[d]||[];
     const sel=calDiaSeleccionado===d;
+    const diaSemana=new Date(calAño,calMes,d).getDay(); // 0=Dom
+    const esDom=diaSemana===0;
     const dots=ts.map(t=>`<div class="cal-dot" style="background:${urgColor[t.urgencia]||'#ccc'};"></div>`).join('');
-    cells+=`<button onclick="selCalDia(${d})" style="min-height:46px;padding:4px;border-radius:8px;background:${esHoy(d)?'var(--red-light)':'#fff'};border:${sel?'2px solid #7D2027':esHoy(d)?'1.5px solid var(--red)':'1px solid transparent'};cursor:pointer;box-shadow:0 1px 2px rgba(0,0,0,.04);text-align:left;width:100%;">
-      <div style="font-size:11px;font-weight:700;line-height:1;color:${esHoy(d)?'var(--red)':'var(--text)'};">${d}</div>
-      <div style="display:flex;flex-wrap:wrap;gap:2px;margin-top:3px;">${dots}</div>
+    const iconoContenido=`<div style="font-size:8px;line-height:1;color:#CF5527;font-weight:700;margin-top:2px;">📸</div>`;
+    const iconoDom=esDom?`<div style="font-size:7px;line-height:1;color:#5FA8C2;font-weight:700;margin-top:1px;">Plan</div>`:'';
+    cells+=`<button onclick="selCalDia(${d})" style="min-height:50px;padding:4px;border-radius:8px;background:${esHoy(d)?'var(--red-light)':esDom?'#f0f6fb':'#fff'};border:${sel?'2px solid #7D2027':esHoy(d)?'1.5px solid var(--red)':esDom?'1px solid #5FA8C2':'1px solid transparent'};cursor:pointer;box-shadow:0 1px 2px rgba(0,0,0,.04);text-align:left;width:100%;">
+      <div style="font-size:11px;font-weight:700;line-height:1;color:${esHoy(d)?'var(--red)':esDom?'#5FA8C2':'var(--text)'};">${d}</div>
+      ${iconoContenido}${iconoDom}
+      <div style="display:flex;flex-wrap:wrap;gap:2px;margin-top:2px;">${dots}</div>
     </button>`;
   }
   dEl.innerHTML=cells;
@@ -1713,13 +1831,25 @@ function renderCalDayTasks(){
   });
   const urgLabel={alta:'Alta',media:'Media',baja:'Baja'};
   const estLabel={no_comenzado:'⬜ No iniciado',en_progreso:'🔄 En progreso',completado:'✅ Completado'};
+  const diaSem=new Date(calAño,calMes,calDiaSeleccionado).getDay();
+  const esDom=diaSem===0;
+  const recurringHTML=`
+    <div style="background:#fff8f0;border-left:3px solid #CF5527;border-radius:0 10px 10px 0;padding:10px 12px;margin-bottom:8px;">
+      <div style="font-size:13px;font-weight:700;color:#CF5527;">📸 Subir contenido</div>
+      <div style="font-size:11px;color:#888;margin-top:2px;">Tarea diaria recurrente</div>
+    </div>
+    ${esDom?`<div style="background:#f0f6fb;border-left:3px solid #5FA8C2;border-radius:0 10px 10px 0;padding:10px 12px;margin-bottom:8px;">
+      <div style="font-size:13px;font-weight:700;color:#5FA8C2;">📅 Planeación semanal de contenido</div>
+      <div style="font-size:11px;color:#888;margin-top:2px;">Domingo — planea los posts de la semana</div>
+    </div>`:''}`;
   el.innerHTML=`<div class="card" style="margin-top:10px;">
-    <div style="font-size:13px;font-weight:800;margin-bottom:10px;">${DIAS_ES[new Date(calAño,calMes,calDiaSeleccionado).getDay()]} ${calDiaSeleccionado} ${MESES_ES[calMes]}</div>
-    ${tareas.length?tareas.map(t=>`
+    <div style="font-size:13px;font-weight:800;margin-bottom:10px;">${DIAS_ES[diaSem]} ${calDiaSeleccionado} ${MESES_ES[calMes]}</div>
+    ${recurringHTML}
+    ${tareas.map(t=>`
     <button onclick="editarTarea(${t.id})" style="width:100%;background:#fafafa;border:none;border-left:3px solid ${urgColor[t.urgencia]};border-radius:0 10px 10px 0;padding:10px 12px;margin-bottom:8px;text-align:left;cursor:pointer;">
       <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:4px;">${t.tarea}</div>
       <div style="font-size:11px;color:#888;">${estLabel[t.estado]} · ${urgLabel[t.urgencia]}</div>
-    </button>`).join(''):'<div style="color:#aaa;font-size:13px;text-align:center;padding:16px 0;">Sin tareas este día</div>'}
+    </button>`).join('')}
   </div>`;
 }
 
@@ -1752,6 +1882,177 @@ function guardarTarea(){
     tareas.push({id:Date.now(),tarea,responsable:document.getElementById('tar-resp').value,fecha:document.getElementById('tar-fecha').value,urgencia:document.getElementById('tar-urg').value,estado:document.getElementById('tar-est').value});
   }
   setTareas(tareas);closeTareaModal();renderTareas();showToast('✓ Tarea guardada','ok');
+}
+
+// REDES
+const REDES_KEY='isbe_redes_v1';
+function getRedes(){try{return JSON.parse(localStorage.getItem(REDES_KEY))||[];}catch{return[];}}
+function setRedes(d){localStorage.setItem(REDES_KEY,JSON.stringify(d));}
+
+let redesVista='posts';
+function setRedesVista(v){
+  redesVista=v;
+  document.getElementById('red-vista-posts').style.display=v==='posts'?'':'none';
+  document.getElementById('red-vista-stats').style.display=v==='stats'?'':'none';
+  document.getElementById('rbtn-posts').classList.toggle('active',v==='posts');
+  document.getElementById('rbtn-stats').classList.toggle('active',v==='stats');
+  renderRedes();
+}
+
+function selPostTipo(t){
+  document.getElementById('post-tipo-val').value=t;
+  ['organico','pauta'].forEach(x=>{
+    const btn=document.getElementById('ptip-'+x);
+    const isOrg=x==='organico';
+    btn.classList.toggle('sel',x===t);
+    btn.style.background=x===t?(isOrg?'#998731':'#7D2027'):'#fff';
+    btn.style.color=x===t?'#fff':'#888';
+    btn.style.borderColor=x===t?(isOrg?'#998731':'#7D2027'):'#ddd';
+  });
+}
+
+function openPostModal(id){
+  document.getElementById('post-edit-id').value=id||'';
+  document.getElementById('post-modal-title').textContent=id?'Editar publicación':'Nueva publicación';
+  document.getElementById('btn-eliminar-post').style.display=id?'':'none';
+  if(id){
+    const p=getRedes().find(x=>x.id===id);
+    if(p){
+      document.getElementById('post-fecha').value=p.fecha||'';
+      document.getElementById('post-tipo').value=p.formato||'post';
+      selPostTipo(p.tipo||'organico');
+      document.getElementById('post-desc').value=p.desc||'';
+      document.getElementById('post-alcance').value=p.alcance||'';
+      document.getElementById('post-likes').value=p.likes||'';
+      document.getElementById('post-comentarios').value=p.comentarios||'';
+      document.getElementById('post-guardados').value=p.guardados||'';
+      document.getElementById('post-compartidos').value=p.compartidos||'';
+      document.getElementById('post-inversion').value=p.inversion||'';
+    }
+  } else {
+    document.getElementById('post-fecha').value=fechaHoy();
+    document.getElementById('post-tipo').value='post';
+    selPostTipo('organico');
+    document.getElementById('post-desc').value='';
+    document.getElementById('post-alcance').value='';
+    document.getElementById('post-likes').value='';
+    document.getElementById('post-comentarios').value='';
+    document.getElementById('post-guardados').value='';
+    document.getElementById('post-compartidos').value='';
+    document.getElementById('post-inversion').value='';
+  }
+  document.getElementById('modal-post').classList.add('show');
+}
+function closePostModal(){document.getElementById('modal-post').classList.remove('show');}
+
+function guardarPost(){
+  const posts=getRedes();
+  const idVal=document.getElementById('post-edit-id').value;
+  const obj={
+    id:idVal||Date.now().toString(),
+    fecha:document.getElementById('post-fecha').value,
+    formato:document.getElementById('post-tipo').value,
+    tipo:document.getElementById('post-tipo-val').value,
+    desc:document.getElementById('post-desc').value.trim(),
+    alcance:parseInt(document.getElementById('post-alcance').value)||0,
+    likes:parseInt(document.getElementById('post-likes').value)||0,
+    comentarios:parseInt(document.getElementById('post-comentarios').value)||0,
+    guardados:parseInt(document.getElementById('post-guardados').value)||0,
+    compartidos:parseInt(document.getElementById('post-compartidos').value)||0,
+    inversion:parseInt(document.getElementById('post-inversion').value)||0,
+  };
+  if(idVal){
+    const idx=posts.findIndex(p=>p.id===idVal);
+    if(idx>=0)posts[idx]=obj; else posts.push(obj);
+  } else {posts.push(obj);}
+  setRedes(posts);closePostModal();renderRedes();showToast('✓ Post guardado','ok');
+}
+
+function eliminarPost(){
+  const id=document.getElementById('post-edit-id').value;
+  if(!id)return;
+  const posts=getRedes().filter(p=>p.id!==id);
+  setRedes(posts);closePostModal();renderRedes();showToast('Post eliminado','ok');
+}
+
+function engRate(p){
+  if(!p.alcance)return 0;
+  return ((p.likes+p.comentarios+p.guardados+p.compartidos)/p.alcance*100);
+}
+
+function renderRedes(){
+  const posts=getRedes().sort((a,b)=>(b.fecha||'').localeCompare(a.fecha||''));
+  const hoy=new Date();
+  const mesAct=`${hoy.getFullYear()}-${String(hoy.getMonth()+1).padStart(2,'0')}`;
+  const desMes=posts.filter(p=>p.fecha&&p.fecha.startsWith(mesAct));
+  const totalAlcance=posts.reduce((s,p)=>s+(p.alcance||0),0);
+  const avgEng=posts.length?posts.reduce((s,p)=>s+engRate(p),0)/posts.length:0;
+
+  document.getElementById('red-total').textContent=posts.length;
+  document.getElementById('red-mes').textContent=desMes.length;
+  document.getElementById('red-alcance').textContent=totalAlcance.toLocaleString('es-CO');
+  document.getElementById('red-eng').textContent=avgEng.toFixed(1)+'%';
+
+  if(redesVista==='posts'){
+    const tipoIcon={post:'🖼️',reel:'🎬',story:'⭕',carrusel:'📂'};
+    document.getElementById('lista-posts').innerHTML=posts.length?posts.map(p=>{
+      const eng=engRate(p);
+      return `<button onclick="openPostModal('${p.id}')" style="width:100%;background:#fff;border:none;border-radius:14px;padding:14px 16px;margin-bottom:10px;box-shadow:0 1px 3px rgba(0,0,0,.06);display:flex;gap:12px;align-items:flex-start;cursor:pointer;text-align:left;">
+        <div style="font-size:26px;line-height:1;flex-shrink:0;">${tipoIcon[p.formato]||'📄'}</div>
+        <div style="flex:1;min-width:0;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+            <span style="font-size:11px;font-weight:700;color:${p.tipo==='pauta'?'#7D2027':'#998731'};background:${p.tipo==='pauta'?'#fdf0ef':'#f5f2e8'};padding:2px 8px;border-radius:8px;">${p.tipo==='pauta'?'💰 Pauta':'🌱 Orgánico'}</span>
+            <span style="font-size:11px;color:#aaa;">${p.fecha?new Date(p.fecha+'T12:00:00').toLocaleDateString('es-CO',{day:'numeric',month:'short'}):'–'}</span>
+          </div>
+          <div style="font-size:13px;color:var(--text);margin-bottom:6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${p.desc||'Sin descripción'}</div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;">
+            ${p.alcance?`<span style="font-size:11px;color:#888;">👁 ${p.alcance.toLocaleString()}</span>`:''}
+            ${p.likes?`<span style="font-size:11px;color:#888;">❤️ ${p.likes}</span>`:''}
+            ${p.guardados?`<span style="font-size:11px;color:#888;">🔖 ${p.guardados}</span>`:''}
+            ${p.alcance?`<span style="font-size:11px;font-weight:700;color:#5FA8C2;">${eng.toFixed(1)}% eng</span>`:''}
+          </div>
+        </div>
+      </button>`;
+    }).join(''):`<div class="empty"><div class="empty-icon">📸</div><div>Sin publicaciones registradas</div></div>`;
+  }
+
+  if(redesVista==='stats'){
+    // Top posts
+    const top=[...posts].filter(p=>p.alcance>0).sort((a,b)=>b.alcance-a.alcance).slice(0,5);
+    document.getElementById('red-top-posts').innerHTML=top.length?top.map((p,i)=>`
+      <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #f5f5f5;">
+        <div style="font-size:18px;font-weight:900;color:${i===0?'#CF5527':'#aaa'};width:20px;text-align:center;">${i+1}</div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:12px;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${p.desc||'Sin descripción'}</div>
+          <div style="font-size:11px;color:#888;margin-top:2px;">${p.fecha||''} · ${p.formato} · ${engRate(p).toFixed(1)}% eng</div>
+        </div>
+        <div style="font-size:13px;font-weight:700;color:#5FA8C2;flex-shrink:0;">👁 ${p.alcance.toLocaleString()}</div>
+      </div>`).join(''):'<div style="color:#aaa;font-size:13px;text-align:center;padding:12px 0;">Agrega alcance a tus posts para ver el ranking</div>';
+
+    // Orgánico vs Pauta
+    const org=posts.filter(p=>p.tipo==='organico');
+    const pau=posts.filter(p=>p.tipo==='pauta');
+    document.getElementById('red-org-count').textContent=org.length;
+    document.getElementById('red-pau-count').textContent=pau.length;
+    document.getElementById('red-org-alc').textContent=org.reduce((s,p)=>s+(p.alcance||0),0).toLocaleString()+' alcance';
+    document.getElementById('red-pau-alc').textContent=pau.reduce((s,p)=>s+(p.alcance||0),0).toLocaleString()+' alcance';
+
+    // Por formato
+    const fmts={post:0,reel:0,story:0,carrusel:0};
+    posts.forEach(p=>fmts[p.formato]=(fmts[p.formato]||0)+1);
+    const fmtIcon={post:'🖼️',reel:'🎬',story:'⭕',carrusel:'📂'};
+    const max=Math.max(...Object.values(fmts),1);
+    document.getElementById('red-por-tipo').innerHTML=Object.entries(fmts).map(([f,c])=>`
+      <div style="margin-bottom:10px;">
+        <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;">
+          <span>${fmtIcon[f]} ${f.charAt(0).toUpperCase()+f.slice(1)}</span>
+          <span style="font-weight:700;">${c}</span>
+        </div>
+        <div style="background:#f0f0f0;border-radius:4px;height:6px;overflow:hidden;">
+          <div style="width:${c/max*100}%;height:100%;background:#7D2027;border-radius:4px;transition:width .3s;"></div>
+        </div>
+      </div>`).join('');
+  }
 }
 
 // IMPORT / EXPORT
