@@ -435,7 +435,7 @@ select.form-control{background-image:url("data:image/svg+xml,%3Csvg xmlns='http:
     <div class="card-title">Inversión Inicial</div>
     <div style="display:flex;align-items:center;gap:6px;margin-top:8px;">
       <span style="font-size:16px;color:var(--sub);">$</span>
-      <input id="fin-inversion" class="input-inline" type="text" inputmode="numeric" placeholder="0" style="font-size:24px;font-weight:800;" oninput="guardarInversion()">
+      <input id="fin-inversion" class="input-inline" type="text" inputmode="numeric" placeholder="0" style="font-size:24px;font-weight:800;" onchange="guardarInversion()" onblur="guardarInversion()">
     </div>
   </div>
 
@@ -838,6 +838,15 @@ select.form-control{background-image:url("data:image/svg+xml,%3Csvg xmlns='http:
           <div style="font-size:12px;font-weight:700;color:#7D2027;" id="red-pau-eng">0% eng</div>
         </div>
       </div>
+    </div>
+
+    <!-- Insights -->
+    <div class="card" style="margin-bottom:12px;border-left:3px solid #CF5527;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+        <div style="font-size:13px;font-weight:800;">🧠 Insights de tus redes</div>
+        <button onclick="renderInsights()" style="background:#f5f5f5;border:none;border-radius:8px;padding:4px 10px;font-size:11px;color:#888;cursor:pointer;font-weight:700;">↺ Actualizar</button>
+      </div>
+      <div id="red-insights"><div style="color:#aaa;font-size:13px;text-align:center;padding:16px 0;">Agrega posts con métricas para ver insights</div></div>
     </div>
 
     <!-- Top posts -->
@@ -1343,7 +1352,7 @@ function completarPedido(id){const v=getVentas();const i=v.findIndex(x=>x.id===i
 // FINANZAS
 function renderFinanzas(){
   const fin=getFinanzas();
-  document.getElementById('fin-inversion').value=fin.inversionInicial||0;
+  if(document.activeElement!==document.getElementById('fin-inversion'))document.getElementById('fin-inversion').value=fin.inversionInicial||0;
   const gastosFijos=fin.gastosFijos||[];
   const totalFijos=gastosFijos.reduce((s,g)=>s+(g.monto||0),0);
   document.getElementById('fin-total-gastos').textContent=fmt(totalFijos);
@@ -1459,7 +1468,16 @@ function renderFinanzas(){
     }
   });
 }
-function guardarInversion(){const fin=getFinanzas();fin.inversionInicial=parsePeso(document.getElementById('fin-inversion').value);setFinanzas(fin);renderFinanzas();}
+function guardarInversion(){
+  const raw=document.getElementById('fin-inversion').value;
+  const val=parsePeso(raw);
+  if(!val&&raw!=='0')return; // no guardar si está vacío
+  const fin=getFinanzas();
+  fin.inversionInicial=val;
+  setFinanzas(fin);
+  renderFinanzas();
+  showToast('✓ Inversión actualizada','ok');
+}
 
 function selGastoPagador(p){document.getElementById('gasto-pagador').value=p;['negocio','isabella'].forEach(x=>document.getElementById('gpag-'+x).classList.toggle('sel',x===p));}
 function selCvarPagador(p){document.getElementById('cvar-pagador').value=p;['negocio','isabella'].forEach(x=>document.getElementById('cvpag-'+x).classList.toggle('sel',x===p));}
@@ -1986,6 +2004,126 @@ function editarSeguidores(){
 let chartRedAlcance=null,chartRedFormato=null,chartRedInter=null,chartRedDia=null,chartRedOrgPau=null;
 function destroyRedCharts(){[chartRedAlcance,chartRedFormato,chartRedInter,chartRedDia,chartRedOrgPau].forEach(c=>{if(c)c.destroy();});chartRedAlcance=chartRedFormato=chartRedInter=chartRedDia=chartRedOrgPau=null;}
 
+function generarInsights(posts){
+  const insights=[];
+  const conAlc=posts.filter(p=>p.alcance>0);
+  if(conAlc.length<2)return insights;
+
+  // 1. Mejor formato por engagement
+  const fmtData={};
+  posts.forEach(p=>{if(!p.alcance)return;if(!fmtData[p.formato])fmtData[p.formato]={sum:0,n:0};fmtData[p.formato].sum+=engRate(p);fmtData[p.formato].n++;});
+  const fmtAvgs=Object.entries(fmtData).map(([f,d])=>({f,avg:d.sum/d.n,n:d.n})).filter(x=>x.n>=1).sort((a,b)=>b.avg-a.avg);
+  if(fmtAvgs.length>=2){
+    const mejor=fmtAvgs[0],peor=fmtAvgs[fmtAvgs.length-1];
+    const fmtNom={post:'los posts',reel:'los reels',story:'las stories',carrusel:'los carruseles'};
+    const diff=mejor.avg-peor.avg;
+    insights.push({
+      emoji:'🎬',
+      titulo:`${fmtNom[mejor.f]||mejor.f} funcionan mejor`,
+      texto:`Tienen ${mejor.avg.toFixed(1)}% de engagement promedio, ${diff.toFixed(1)}pts más que ${fmtNom[peor.f]||peor.f} (${peor.avg.toFixed(1)}%). Prioriza este formato.`,
+      tipo:'positivo'
+    });
+  } else if(fmtAvgs.length===1){
+    const fmtNom={post:'los posts',reel:'los reels',story:'las stories',carrusel:'los carruseles'};
+    insights.push({emoji:'📌',titulo:'Solo un formato con métricas',texto:`Solo tienes métricas en ${fmtNom[fmtAvgs[0].f]||fmtAvgs[0].f}. Prueba otros formatos para comparar.`,tipo:'neutro'});
+  }
+
+  // 2. Mejor día para publicar
+  const diasAlc={},diasN={};
+  conAlc.forEach(p=>{const d=new Date(p.fecha+'T12:00:00').getDay();diasAlc[d]=(diasAlc[d]||0)+p.alcance;diasN[d]=(diasN[d]||0)+1;});
+  const diasProm=Object.entries(diasAlc).map(([d,a])=>({d:parseInt(d),avg:a/diasN[d],n:diasN[d]})).sort((a,b)=>b.avg-a.avg);
+  if(diasProm.length>=2){
+    const noms=['domingos','lunes','martes','miércoles','jueves','viernes','sábados'];
+    const mejor=diasProm[0],peor=diasProm[diasProm.length-1];
+    insights.push({
+      emoji:'📅',
+      titulo:`Los ${noms[mejor.d]} son tu mejor día`,
+      texto:`Promedio de ${Math.round(mejor.avg).toLocaleString()} alcance vs ${Math.round(peor.avg).toLocaleString()} los ${noms[peor.d]}. Programa tus mejores posts para ${noms[mejor.d]}.`,
+      tipo:'positivo'
+    });
+  }
+
+  // 3. Tendencia de alcance (primeros vs últimos 30%)
+  const ordenados=[...conAlc].sort((a,b)=>(a.fecha||'').localeCompare(b.fecha||''));
+  if(ordenados.length>=4){
+    const corte=Math.max(1,Math.floor(ordenados.length*0.35));
+    const primeros=ordenados.slice(0,corte);
+    const ultimos=ordenados.slice(-corte);
+    const avgPrim=primeros.reduce((s,p)=>s+p.alcance,0)/primeros.length;
+    const avgUlt=ultimos.reduce((s,p)=>s+p.alcance,0)/ultimos.length;
+    const cambio=((avgUlt-avgPrim)/avgPrim*100);
+    if(Math.abs(cambio)>5){
+      insights.push({
+        emoji: cambio>0?'📈':'📉',
+        titulo: cambio>0?`Tu alcance está creciendo ${cambio.toFixed(0)}%`:`Tu alcance bajó ${Math.abs(cambio).toFixed(0)}%`,
+        texto: cambio>0
+          ?`Pasaste de ${Math.round(avgPrim).toLocaleString()} a ${Math.round(avgUlt).toLocaleString()} de alcance promedio. Sigue con lo que estás haciendo.`
+          :`Pasaste de ${Math.round(avgPrim).toLocaleString()} a ${Math.round(avgUlt).toLocaleString()} de alcance promedio. Revisa qué cambió en tu contenido reciente.`,
+        tipo: cambio>0?'positivo':'alerta'
+      });
+    } else {
+      insights.push({emoji:'➡️',titulo:'Alcance estable',texto:`Tu alcance se mantiene constante en ~${Math.round(avgUlt).toLocaleString()} por post. Para crecer, intenta nuevos formatos o aumenta la frecuencia.`,tipo:'neutro'});
+    }
+  }
+
+  // 4. Orgánico vs Pauta
+  const org=conAlc.filter(p=>p.tipo==='organico');
+  const pau=conAlc.filter(p=>p.tipo==='pauta');
+  if(org.length>=1&&pau.length>=1){
+    const orgEng=org.reduce((s,p)=>s+engRate(p),0)/org.length;
+    const pauEng=pau.reduce((s,p)=>s+engRate(p),0)/pau.length;
+    const orgAlcProm=org.reduce((s,p)=>s+p.alcance,0)/org.length;
+    const pauAlcProm=pau.reduce((s,p)=>s+p.alcance,0)/pau.length;
+    if(orgEng>pauEng){
+      insights.push({emoji:'🌱',titulo:'Tu orgánico engancha más que la pauta',texto:`Eng. orgánico ${orgEng.toFixed(1)}% vs pauta ${pauEng.toFixed(1)}%. Tu comunidad responde bien al contenido natural. Usa la pauta solo para amplificar posts que ya funcionaron orgánicamente.`,tipo:'positivo'});
+    } else {
+      insights.push({emoji:'💰',titulo:'La pauta amplifica bien tu alcance',texto:`Pauta: ${Math.round(pauAlcProm).toLocaleString()} alcance prom vs orgánico: ${Math.round(orgAlcProm).toLocaleString()}. Considera invertir en los posts con mejor engagement orgánico.`,tipo:'neutro'});
+    }
+  }
+
+  // 5. Tasa de guardados (señal de contenido de valor)
+  const guardTotal=conAlc.reduce((s,p)=>s+(p.guardados||0),0);
+  const alcTotal=conAlc.reduce((s,p)=>s+p.alcance,0);
+  const saveRate=alcTotal>0?guardTotal/alcTotal*100:0;
+  if(saveRate>0){
+    if(saveRate>=1.5){
+      insights.push({emoji:'🔖',titulo:`Alta tasa de guardados (${saveRate.toFixed(2)}%)`,texto:'Los guardados indican contenido de valor o aspiracional. Instagram premia esto con más alcance. Sigue creando contenido que la gente quiere guardar para después.',tipo:'positivo'});
+    } else if(saveRate<0.5&&guardTotal>0){
+      insights.push({emoji:'🔖',titulo:`Tasa de guardados baja (${saveRate.toFixed(2)}%)`,texto:'Los guardados le dicen al algoritmo que tu contenido es valioso. Prueba posts educativos, tips de estilismo o guías de cuidado de bolsas.',tipo:'alerta'});
+    }
+  }
+
+  // 6. Frecuencia de publicación
+  if(ordenados.length>=3){
+    const primera=new Date(ordenados[0].fecha+'T12:00:00');
+    const ultima=new Date(ordenados[ordenados.length-1].fecha+'T12:00:00');
+    const semanas=Math.max(1,(ultima-primera)/(7*24*60*60*1000));
+    const freqSem=ordenados.length/semanas;
+    if(freqSem<3){
+      insights.push({emoji:'⏰',titulo:`Publicas ${freqSem.toFixed(1)} veces/semana`,texto:'Para crecer en Instagram se recomiendan mínimo 4-5 posts semanales (entre feed y stories). Aumentar la frecuencia puede mejorar tu alcance significativamente.',tipo:'alerta'});
+    } else {
+      insights.push({emoji:'✅',titulo:`Buena frecuencia: ${freqSem.toFixed(1)} posts/semana`,texto:'Estás publicando con buena consistencia. La regularidad es clave para que el algoritmo favorezca tu cuenta.',tipo:'positivo'});
+    }
+  }
+
+  return insights;
+}
+
+function renderInsights(){
+  const posts=getRedes();
+  const insights=generarInsights(posts);
+  const el=document.getElementById('red-insights');
+  if(!el)return;
+  const colores={positivo:{bg:'#f0faf4',border:'#2ecc71',icon:''},alerta:{bg:'#fff8f0',border:'#CF5527',icon:''},neutro:{bg:'#f5f5f5',border:'#aaa',icon:''}};
+  el.innerHTML=insights.length?insights.map(ins=>{
+    const c=colores[ins.tipo]||colores.neutro;
+    return `<div style="background:${c.bg};border-left:3px solid ${c.border};border-radius:0 10px 10px 0;padding:12px 14px;margin-bottom:10px;">
+      <div style="font-size:13px;font-weight:800;margin-bottom:4px;">${ins.emoji} ${ins.titulo}</div>
+      <div style="font-size:12px;color:#555;line-height:1.5;">${ins.texto}</div>
+    </div>`;
+  }).join(''):'<div style="color:#aaa;font-size:13px;text-align:center;padding:16px 0;">Agrega más posts con métricas para ver insights</div>';
+}
+
 let redesVista='posts';
 function setRedesVista(v){
   redesVista=v;
@@ -2189,6 +2327,7 @@ function renderRedes(){
 
   if(redesVista==='stats'){
     destroyRedCharts();
+    renderInsights();
 
     // — Chart 1: Alcance por publicación (últimos 15) —
     const conFecha=[...posts].filter(p=>p.fecha).reverse().slice(-15);
