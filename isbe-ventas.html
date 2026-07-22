@@ -825,6 +825,20 @@ select.form-control{background-image:url("data:image/svg+xml,%3Csvg xmlns='http:
         <div><label class="form-label" style="font-size:11px;">Inversión ($)</label><input id="post-inversion" class="form-control" type="number" placeholder="0" min="0"></div>
       </div>
     </div>
+    <div class="form-group">
+      <label class="form-label">Link del post</label>
+      <input id="post-link" class="form-control" type="url" placeholder="https://instagram.com/p/...">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Foto / imagen del post</label>
+      <div id="post-img-preview" style="display:none;margin-bottom:8px;border-radius:10px;overflow:hidden;">
+        <img id="post-img-thumb" src="" style="width:100%;max-height:200px;object-fit:cover;border-radius:10px;">
+        <button onclick="clearPostImg()" style="width:100%;margin-top:4px;background:#fee;border:none;border-radius:8px;padding:6px;font-size:12px;color:#c0392b;cursor:pointer;">Quitar imagen</button>
+      </div>
+      <button onclick="document.getElementById('post-img-input').click()" style="width:100%;padding:10px;border-radius:10px;border:1.5px dashed #ddd;background:#fafafa;font-size:13px;color:#888;cursor:pointer;" id="post-img-btn">📷 Subir imagen</button>
+      <input id="post-img-input" type="file" accept="image/*" style="display:none;" onchange="previewPostImg(this)">
+      <input type="hidden" id="post-img-data">
+    </div>
     <button class="btn btn-primary" onclick="guardarPost()" style="width:100%;">Guardar</button>
     <button onclick="eliminarPost()" id="btn-eliminar-post" class="btn btn-secondary" style="width:100%;margin-top:8px;display:none;">Eliminar</button>
   </div>
@@ -1899,6 +1913,29 @@ function setRedesVista(v){
   renderRedes();
 }
 
+function previewPostImg(input){
+  const file=input.files[0];
+  if(!file)return;
+  const reader=new FileReader();
+  reader.onload=e=>{setPostImgPreview(e.target.result);};
+  reader.readAsDataURL(file);
+}
+function setPostImgPreview(src){
+  document.getElementById('post-img-data').value=src||'';
+  const preview=document.getElementById('post-img-preview');
+  const btn=document.getElementById('post-img-btn');
+  if(src){
+    document.getElementById('post-img-thumb').src=src;
+    preview.style.display='';
+    btn.style.display='none';
+  } else {
+    preview.style.display='none';
+    btn.style.display='';
+    document.getElementById('post-img-input').value='';
+  }
+}
+function clearPostImg(){setPostImgPreview('');}
+
 function selPostTipo(t){
   document.getElementById('post-tipo-val').value=t;
   ['organico','pauta'].forEach(x=>{
@@ -1928,6 +1965,8 @@ function openPostModal(id){
       document.getElementById('post-guardados').value=p.guardados||'';
       document.getElementById('post-compartidos').value=p.compartidos||'';
       document.getElementById('post-inversion').value=p.inversion||'';
+      document.getElementById('post-link').value=p.link||'';
+      setPostImgPreview(p.img||'');
     }
   } else {
     document.getElementById('post-fecha').value=fechaHoy();
@@ -1940,6 +1979,8 @@ function openPostModal(id){
     document.getElementById('post-guardados').value='';
     document.getElementById('post-compartidos').value='';
     document.getElementById('post-inversion').value='';
+    document.getElementById('post-link').value='';
+    setPostImgPreview('');
   }
   document.getElementById('modal-post').classList.add('show');
 }
@@ -1960,6 +2001,8 @@ function guardarPost(){
     guardados:parseInt(document.getElementById('post-guardados').value)||0,
     compartidos:parseInt(document.getElementById('post-compartidos').value)||0,
     inversion:parseInt(document.getElementById('post-inversion').value)||0,
+    link:document.getElementById('post-link').value.trim(),
+    img:document.getElementById('post-img-data').value,
   };
   if(idVal){
     const idx=posts.findIndex(p=>p.id===idVal);
@@ -1997,19 +2040,23 @@ function renderRedes(){
     const tipoIcon={post:'🖼️',reel:'🎬',story:'⭕',carrusel:'📂'};
     document.getElementById('lista-posts').innerHTML=posts.length?posts.map(p=>{
       const eng=engRate(p);
-      return `<button onclick="openPostModal('${p.id}')" style="width:100%;background:#fff;border:none;border-radius:14px;padding:14px 16px;margin-bottom:10px;box-shadow:0 1px 3px rgba(0,0,0,.06);display:flex;gap:12px;align-items:flex-start;cursor:pointer;text-align:left;">
-        <div style="font-size:26px;line-height:1;flex-shrink:0;">${tipoIcon[p.formato]||'📄'}</div>
-        <div style="flex:1;min-width:0;">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
-            <span style="font-size:11px;font-weight:700;color:${p.tipo==='pauta'?'#7D2027':'#998731'};background:${p.tipo==='pauta'?'#fdf0ef':'#f5f2e8'};padding:2px 8px;border-radius:8px;">${p.tipo==='pauta'?'💰 Pauta':'🌱 Orgánico'}</span>
+      return `<button onclick="openPostModal('${p.id}')" style="width:100%;background:#fff;border:none;border-radius:14px;overflow:hidden;margin-bottom:10px;box-shadow:0 1px 3px rgba(0,0,0,.06);cursor:pointer;text-align:left;">
+        ${p.img?`<img src="${p.img}" style="width:100%;max-height:180px;object-fit:cover;display:block;">`:''}
+        <div style="padding:12px 14px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+            <div style="display:flex;gap:6px;align-items:center;">
+              <span style="font-size:15px;">${tipoIcon[p.formato]||'📄'}</span>
+              <span style="font-size:11px;font-weight:700;color:${p.tipo==='pauta'?'#7D2027':'#998731'};background:${p.tipo==='pauta'?'#fdf0ef':'#f5f2e8'};padding:2px 8px;border-radius:8px;">${p.tipo==='pauta'?'💰 Pauta':'🌱 Orgánico'}</span>
+            </div>
             <span style="font-size:11px;color:#aaa;">${p.fecha?new Date(p.fecha+'T12:00:00').toLocaleDateString('es-CO',{day:'numeric',month:'short'}):'–'}</span>
           </div>
           <div style="font-size:13px;color:var(--text);margin-bottom:6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${p.desc||'Sin descripción'}</div>
-          <div style="display:flex;gap:10px;flex-wrap:wrap;">
+          <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
             ${p.alcance?`<span style="font-size:11px;color:#888;">👁 ${p.alcance.toLocaleString()}</span>`:''}
             ${p.likes?`<span style="font-size:11px;color:#888;">❤️ ${p.likes}</span>`:''}
             ${p.guardados?`<span style="font-size:11px;color:#888;">🔖 ${p.guardados}</span>`:''}
             ${p.alcance?`<span style="font-size:11px;font-weight:700;color:#5FA8C2;">${eng.toFixed(1)}% eng</span>`:''}
+            ${p.link?`<a href="${p.link}" target="_blank" onclick="event.stopPropagation()" style="font-size:11px;color:#5FA8C2;text-decoration:none;margin-left:auto;">Ver post ↗</a>`:''}
           </div>
         </div>
       </button>`;
@@ -2020,14 +2067,20 @@ function renderRedes(){
     // Top posts
     const top=[...posts].filter(p=>p.alcance>0).sort((a,b)=>b.alcance-a.alcance).slice(0,5);
     document.getElementById('red-top-posts').innerHTML=top.length?top.map((p,i)=>`
-      <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #f5f5f5;">
-        <div style="font-size:18px;font-weight:900;color:${i===0?'#CF5527':'#aaa'};width:20px;text-align:center;">${i+1}</div>
-        <div style="flex:1;min-width:0;">
-          <div style="font-size:12px;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${p.desc||'Sin descripción'}</div>
-          <div style="font-size:11px;color:#888;margin-top:2px;">${p.fecha||''} · ${p.formato} · ${engRate(p).toFixed(1)}% eng</div>
+      <button onclick="openPostModal('${p.id}')" style="width:100%;background:#fafafa;border:none;border-radius:12px;overflow:hidden;margin-bottom:8px;cursor:pointer;text-align:left;display:flex;gap:0;">
+        ${p.img?`<img src="${p.img}" style="width:64px;height:64px;object-fit:cover;flex-shrink:0;">`:`<div style="width:64px;height:64px;background:#f0f0f0;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;">${{post:'🖼️',reel:'🎬',story:'⭕',carrusel:'📂'}[p.formato]||'📄'}</div>`}
+        <div style="flex:1;padding:10px 12px;min-width:0;">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+            <div style="font-size:11px;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;padding-right:8px;">${p.desc||'Sin descripción'}</div>
+            <div style="font-size:16px;font-weight:900;color:${i===0?'#CF5527':i===1?'#998731':'#aaa'};flex-shrink:0;">#${i+1}</div>
+          </div>
+          <div style="display:flex;gap:8px;margin-top:4px;flex-wrap:wrap;">
+            <span style="font-size:11px;color:#5FA8C2;font-weight:700;">👁 ${p.alcance.toLocaleString()}</span>
+            <span style="font-size:11px;color:#888;">${engRate(p).toFixed(1)}% eng</span>
+            ${p.link?`<a href="${p.link}" target="_blank" onclick="event.stopPropagation()" style="font-size:11px;color:#5FA8C2;">Ver ↗</a>`:''}
+          </div>
         </div>
-        <div style="font-size:13px;font-weight:700;color:#5FA8C2;flex-shrink:0;">👁 ${p.alcance.toLocaleString()}</div>
-      </div>`).join(''):'<div style="color:#aaa;font-size:13px;text-align:center;padding:12px 0;">Agrega alcance a tus posts para ver el ranking</div>';
+      </button>`).join(''):'<div style="color:#aaa;font-size:13px;text-align:center;padding:12px 0;">Agrega alcance a tus posts para ver el ranking</div>';
 
     // Orgánico vs Pauta
     const org=posts.filter(p=>p.tipo==='organico');
