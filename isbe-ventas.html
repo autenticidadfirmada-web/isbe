@@ -723,8 +723,8 @@ select.form-control{background-image:url("data:image/svg+xml,%3Csvg xmlns='http:
 <div class="sec" id="sec-redes">
   <div class="sec-hdr"><div class="sec-title">Redes</div></div>
 
-  <!-- KPIs redes -->
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;">
+  <!-- KPIs redes — fila 1 -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
     <div class="card" style="text-align:center;">
       <div class="card-sub">Posts totales</div>
       <div class="card-num" id="red-total">0</div>
@@ -738,8 +738,24 @@ select.form-control{background-image:url("data:image/svg+xml,%3Csvg xmlns='http:
       <div class="card-num" id="red-alcance">0</div>
     </div>
     <div class="card" style="text-align:center;">
-      <div class="card-sub">Engagement prom.</div>
+      <div class="card-sub">Eng. promedio</div>
       <div class="card-num" id="red-eng">0%</div>
+    </div>
+    <div class="card" style="text-align:center;">
+      <div class="card-sub">Likes totales</div>
+      <div class="card-num" id="red-likes-total">0</div>
+    </div>
+    <div class="card" style="text-align:center;">
+      <div class="card-sub">Guardados totales</div>
+      <div class="card-num" id="red-guard-total">0</div>
+    </div>
+    <div class="card" style="text-align:center;">
+      <div class="card-sub">Posts/semana</div>
+      <div class="card-num" id="red-freq">–</div>
+    </div>
+    <div class="card" style="text-align:center;">
+      <div class="card-sub">Mejor eng.</div>
+      <div class="card-num" id="red-best-eng">0%</div>
     </div>
   </div>
 
@@ -757,27 +773,60 @@ select.form-control{background-image:url("data:image/svg+xml,%3Csvg xmlns='http:
 
   <!-- Vista Stats -->
   <div id="red-vista-stats" style="display:none;">
+
+    <!-- Chart alcance en el tiempo -->
     <div class="card" style="margin-bottom:12px;">
-      <div style="font-size:13px;font-weight:800;margin-bottom:10px;">🏆 Mejores posts (por alcance)</div>
-      <div id="red-top-posts"></div>
+      <div style="font-size:13px;font-weight:800;margin-bottom:12px;">📈 Alcance por publicación</div>
+      <div style="height:160px;"><canvas id="chart-red-alcance"></canvas></div>
     </div>
+
+    <!-- Chart engagement por formato -->
     <div class="card" style="margin-bottom:12px;">
-      <div style="font-size:13px;font-weight:800;margin-bottom:10px;">📈 Orgánico vs Pauta</div>
-      <div style="display:flex;gap:12px;">
-        <div style="flex:1;text-align:center;">
-          <div style="font-size:11px;color:#888;margin-bottom:4px;">Orgánico</div>
-          <div style="font-size:22px;font-weight:800;color:#998731;" id="red-org-count">0</div>
+      <div style="font-size:13px;font-weight:800;margin-bottom:12px;">🎯 Engagement promedio por formato</div>
+      <div style="height:140px;"><canvas id="chart-red-formato"></canvas></div>
+    </div>
+
+    <!-- Charts interacciones + mejor día -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
+      <div class="card">
+        <div style="font-size:12px;font-weight:800;margin-bottom:10px;">💬 Interacciones</div>
+        <div style="height:130px;"><canvas id="chart-red-inter"></canvas></div>
+      </div>
+      <div class="card">
+        <div style="font-size:12px;font-weight:800;margin-bottom:10px;">📅 Mejor día</div>
+        <div style="height:130px;"><canvas id="chart-red-dia"></canvas></div>
+      </div>
+    </div>
+
+    <!-- Orgánico vs Pauta chart -->
+    <div class="card" style="margin-bottom:12px;">
+      <div style="font-size:13px;font-weight:800;margin-bottom:10px;">🌱 Orgánico vs 💰 Pauta</div>
+      <div style="height:120px;"><canvas id="chart-red-orgpau"></canvas></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px;">
+        <div style="text-align:center;background:#f5f2e8;border-radius:10px;padding:10px;">
+          <div style="font-size:11px;color:#888;">Orgánico</div>
+          <div style="font-size:20px;font-weight:800;color:#998731;" id="red-org-count">0</div>
           <div style="font-size:11px;color:#888;" id="red-org-alc">0 alcance</div>
+          <div style="font-size:12px;font-weight:700;color:#998731;" id="red-org-eng">0% eng</div>
         </div>
-        <div style="flex:1;text-align:center;">
-          <div style="font-size:11px;color:#888;margin-bottom:4px;">Pauta</div>
-          <div style="font-size:22px;font-weight:800;color:#7D2027;" id="red-pau-count">0</div>
+        <div style="text-align:center;background:#fdf0ef;border-radius:10px;padding:10px;">
+          <div style="font-size:11px;color:#888;">Pauta</div>
+          <div style="font-size:20px;font-weight:800;color:#7D2027;" id="red-pau-count">0</div>
           <div style="font-size:11px;color:#888;" id="red-pau-alc">0 alcance</div>
+          <div style="font-size:12px;font-weight:700;color:#7D2027;" id="red-pau-eng">0% eng</div>
         </div>
       </div>
     </div>
+
+    <!-- Top posts -->
+    <div class="card" style="margin-bottom:12px;">
+      <div style="font-size:13px;font-weight:800;margin-bottom:10px;">🏆 Top posts por alcance</div>
+      <div id="red-top-posts"></div>
+    </div>
+
+    <!-- Por formato -->
     <div class="card">
-      <div style="font-size:13px;font-weight:800;margin-bottom:10px;">📁 Por formato</div>
+      <div style="font-size:13px;font-weight:800;margin-bottom:10px;">📁 Posts por formato</div>
       <div id="red-por-tipo"></div>
     </div>
   </div>
@@ -1902,6 +1951,8 @@ function guardarTarea(){
 const REDES_KEY='isbe_redes_v1';
 function getRedes(){try{return JSON.parse(localStorage.getItem(REDES_KEY))||[];}catch{return[];}}
 function setRedes(d){localStorage.setItem(REDES_KEY,JSON.stringify(d));}
+let chartRedAlcance=null,chartRedFormato=null,chartRedInter=null,chartRedDia=null,chartRedOrgPau=null;
+function destroyRedCharts(){[chartRedAlcance,chartRedFormato,chartRedInter,chartRedDia,chartRedOrgPau].forEach(c=>{if(c)c.destroy();});chartRedAlcance=chartRedFormato=chartRedInter=chartRedDia=chartRedOrgPau=null;}
 
 let redesVista='posts';
 function setRedesVista(v){
@@ -2052,12 +2103,23 @@ function renderRedes(){
   const mesAct=`${hoy.getFullYear()}-${String(hoy.getMonth()+1).padStart(2,'0')}`;
   const desMes=posts.filter(p=>p.fecha&&p.fecha.startsWith(mesAct));
   const totalAlcance=posts.reduce((s,p)=>s+(p.alcance||0),0);
+  const totalLikes=posts.reduce((s,p)=>s+(p.likes||0),0);
+  const totalGuard=posts.reduce((s,p)=>s+(p.guardados||0),0);
   const avgEng=posts.length?posts.reduce((s,p)=>s+engRate(p),0)/posts.length:0;
+  const bestEng=posts.length?Math.max(...posts.map(p=>engRate(p))):0;
+  // Frecuencia semanal: posts en últimas 4 semanas
+  const hace4sem=new Date(hoy.getTime()-28*24*60*60*1000);
+  const recientes=posts.filter(p=>{if(!p.fecha)return false;return new Date(p.fecha+'T12:00:00')>=hace4sem;});
+  const freq=(recientes.length/4).toFixed(1);
 
   document.getElementById('red-total').textContent=posts.length;
   document.getElementById('red-mes').textContent=desMes.length;
   document.getElementById('red-alcance').textContent=totalAlcance.toLocaleString('es-CO');
   document.getElementById('red-eng').textContent=avgEng.toFixed(1)+'%';
+  document.getElementById('red-likes-total').textContent=totalLikes.toLocaleString();
+  document.getElementById('red-guard-total').textContent=totalGuard.toLocaleString();
+  document.getElementById('red-freq').textContent=freq+'/sem';
+  document.getElementById('red-best-eng').textContent=bestEng.toFixed(1)+'%';
 
   if(redesVista==='posts'){
     const tipoIcon={post:'🖼️',reel:'🎬',story:'⭕',carrusel:'📂'};
@@ -2087,7 +2149,81 @@ function renderRedes(){
   }
 
   if(redesVista==='stats'){
-    // Top posts
+    destroyRedCharts();
+
+    // — Chart 1: Alcance por publicación (últimos 15) —
+    const conFecha=[...posts].filter(p=>p.fecha).reverse().slice(-15);
+    const alcLabels=conFecha.map(p=>new Date(p.fecha+'T12:00:00').toLocaleDateString('es-CO',{day:'numeric',month:'short'}));
+    const alcData=conFecha.map(p=>p.alcance||0);
+    if(document.getElementById('chart-red-alcance')){
+      chartRedAlcance=new Chart(document.getElementById('chart-red-alcance').getContext('2d'),{
+        type:'bar',
+        data:{labels:alcLabels,datasets:[{label:'Alcance',data:alcData,backgroundColor:conFecha.map(p=>p.tipo==='pauta'?'#7D2027':'#5FA8C2'),borderRadius:4,borderSkipped:false}]},
+        options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`${ctx.raw.toLocaleString()} alcance`}}},scales:{x:{ticks:{font:{size:9},maxRotation:45}},y:{ticks:{font:{size:9}}}}}
+      });
+    }
+
+    // — Chart 2: Engagement promedio por formato —
+    const fmtEng={post:[],reel:[],story:[],carrusel:[]};
+    posts.forEach(p=>{if(p.alcance)fmtEng[p.formato]=(fmtEng[p.formato]||[]).concat(engRate(p));});
+    const fmtAvg=Object.entries(fmtEng).map(([f,arr])=>({f,avg:arr.length?arr.reduce((a,b)=>a+b,0)/arr.length:0}));
+    const fmtIcon2={post:'🖼️ Post',reel:'🎬 Reel',story:'⭕ Story',carrusel:'📂 Carrusel'};
+    if(document.getElementById('chart-red-formato')){
+      chartRedFormato=new Chart(document.getElementById('chart-red-formato').getContext('2d'),{
+        type:'bar',
+        data:{labels:fmtAvg.map(x=>fmtIcon2[x.f]),datasets:[{data:fmtAvg.map(x=>parseFloat(x.avg.toFixed(2))),backgroundColor:['#7D2027','#CF5527','#5FA8C2','#998731'],borderRadius:6,borderSkipped:false}]},
+        options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`${ctx.raw}% eng`}}},scales:{x:{ticks:{font:{size:9},callback:v=>v+'%'}},y:{ticks:{font:{size:10}}}}}
+      });
+    }
+
+    // — Chart 3: Interacciones desglosadas (doughnut) —
+    const interData=[totalLikes,posts.reduce((s,p)=>s+(p.comentarios||0),0),totalGuard,posts.reduce((s,p)=>s+(p.compartidos||0),0)];
+    if(document.getElementById('chart-red-inter')){
+      chartRedInter=new Chart(document.getElementById('chart-red-inter').getContext('2d'),{
+        type:'doughnut',
+        data:{labels:['❤️ Likes','💬 Coments','🔖 Guard.','↗ Compart.'],datasets:[{data:interData,backgroundColor:['#7D2027','#CF5527','#998731','#5FA8C2'],borderWidth:0}]},
+        options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:8},boxWidth:8,padding:4}}}}
+      });
+    }
+
+    // — Chart 4: Mejor día para publicar —
+    const diasAlc=[0,0,0,0,0,0,0],diasCount=[0,0,0,0,0,0,0];
+    posts.forEach(p=>{if(!p.fecha||!p.alcance)return;const d=new Date(p.fecha+'T12:00:00').getDay();diasAlc[d]+=p.alcance;diasCount[d]++;});
+    const diasAvg=diasAlc.map((a,i)=>diasCount[i]?parseFloat((a/diasCount[i]).toFixed(0)):0);
+    const maxDia=Math.max(...diasAvg);
+    if(document.getElementById('chart-red-dia')){
+      chartRedDia=new Chart(document.getElementById('chart-red-dia').getContext('2d'),{
+        type:'bar',
+        data:{labels:['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'],datasets:[{data:diasAvg,backgroundColor:diasAvg.map(v=>v===maxDia&&v>0?'#CF5527':'#e0e0e0'),borderRadius:4,borderSkipped:false}]},
+        options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{font:{size:9}}},y:{ticks:{font:{size:9}},display:false}}}
+      });
+    }
+
+    // — Chart 5: Orgánico vs Pauta (barras comparativas) —
+    const org=posts.filter(p=>p.tipo==='organico');
+    const pau=posts.filter(p=>p.tipo==='pauta');
+    const orgAlc=org.reduce((s,p)=>s+(p.alcance||0),0);
+    const pauAlc=pau.reduce((s,p)=>s+(p.alcance||0),0);
+    const orgEngAvg=org.length?org.reduce((s,p)=>s+engRate(p),0)/org.length:0;
+    const pauEngAvg=pau.length?pau.reduce((s,p)=>s+engRate(p),0)/pau.length:0;
+    document.getElementById('red-org-count').textContent=org.length;
+    document.getElementById('red-pau-count').textContent=pau.length;
+    document.getElementById('red-org-alc').textContent=orgAlc.toLocaleString()+' alcance';
+    document.getElementById('red-pau-alc').textContent=pauAlc.toLocaleString()+' alcance';
+    document.getElementById('red-org-eng').textContent=orgEngAvg.toFixed(1)+'% eng';
+    document.getElementById('red-pau-eng').textContent=pauEngAvg.toFixed(1)+'% eng';
+    if(document.getElementById('chart-red-orgpau')){
+      chartRedOrgPau=new Chart(document.getElementById('chart-red-orgpau').getContext('2d'),{
+        type:'bar',
+        data:{labels:['Posts','Alcance prom.','Eng. prom.'],datasets:[
+          {label:'Orgánico',data:[org.length,org.length?Math.round(orgAlc/org.length):0,parseFloat(orgEngAvg.toFixed(1))],backgroundColor:'#998731',borderRadius:4},
+          {label:'Pauta',data:[pau.length,pau.length?Math.round(pauAlc/pau.length):0,parseFloat(pauEngAvg.toFixed(1))],backgroundColor:'#7D2027',borderRadius:4}
+        ]},
+        options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:9},boxWidth:10,padding:6}}},scales:{x:{ticks:{font:{size:9}}},y:{ticks:{font:{size:9}}}}}
+      });
+    }
+
+    // — Top posts —
     const top=[...posts].filter(p=>p.alcance>0).sort((a,b)=>b.alcance-a.alcance).slice(0,5);
     document.getElementById('red-top-posts').innerHTML=top.length?top.map((p,i)=>`
       <button onclick="openPostModal('${p.id}')" style="width:100%;background:#fafafa;border:none;border-radius:12px;overflow:hidden;margin-bottom:8px;cursor:pointer;text-align:left;display:flex;gap:0;">
@@ -2100,32 +2236,25 @@ function renderRedes(){
           <div style="display:flex;gap:8px;margin-top:4px;flex-wrap:wrap;">
             <span style="font-size:11px;color:#5FA8C2;font-weight:700;">👁 ${p.alcance.toLocaleString()}</span>
             <span style="font-size:11px;color:#888;">${engRate(p).toFixed(1)}% eng</span>
+            <span style="font-size:11px;color:#888;">❤️ ${p.likes||0} · 🔖 ${p.guardados||0}</span>
             ${p.link?`<a href="${p.link}" target="_blank" onclick="event.stopPropagation()" style="font-size:11px;color:#5FA8C2;">Ver ↗</a>`:''}
           </div>
         </div>
       </button>`).join(''):'<div style="color:#aaa;font-size:13px;text-align:center;padding:12px 0;">Agrega alcance a tus posts para ver el ranking</div>';
 
-    // Orgánico vs Pauta
-    const org=posts.filter(p=>p.tipo==='organico');
-    const pau=posts.filter(p=>p.tipo==='pauta');
-    document.getElementById('red-org-count').textContent=org.length;
-    document.getElementById('red-pau-count').textContent=pau.length;
-    document.getElementById('red-org-alc').textContent=org.reduce((s,p)=>s+(p.alcance||0),0).toLocaleString()+' alcance';
-    document.getElementById('red-pau-alc').textContent=pau.reduce((s,p)=>s+(p.alcance||0),0).toLocaleString()+' alcance';
-
-    // Por formato
+    // — Por formato —
     const fmts={post:0,reel:0,story:0,carrusel:0};
     posts.forEach(p=>fmts[p.formato]=(fmts[p.formato]||0)+1);
     const fmtIcon={post:'🖼️',reel:'🎬',story:'⭕',carrusel:'📂'};
-    const max=Math.max(...Object.values(fmts),1);
+    const maxFmt=Math.max(...Object.values(fmts),1);
     document.getElementById('red-por-tipo').innerHTML=Object.entries(fmts).map(([f,c])=>`
       <div style="margin-bottom:10px;">
         <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;">
           <span>${fmtIcon[f]} ${f.charAt(0).toUpperCase()+f.slice(1)}</span>
-          <span style="font-weight:700;">${c}</span>
+          <span style="font-weight:700;">${c} posts · ${fmtAvg.find(x=>x.f===f)?.avg.toFixed(1)||0}% eng prom.</span>
         </div>
         <div style="background:#f0f0f0;border-radius:4px;height:6px;overflow:hidden;">
-          <div style="width:${c/max*100}%;height:100%;background:#7D2027;border-radius:4px;transition:width .3s;"></div>
+          <div style="width:${c/maxFmt*100}%;height:100%;background:#7D2027;border-radius:4px;"></div>
         </div>
       </div>`).join('');
   }
