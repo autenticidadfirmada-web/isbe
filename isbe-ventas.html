@@ -723,6 +723,28 @@ select.form-control{background-image:url("data:image/svg+xml,%3Csvg xmlns='http:
 <div class="sec" id="sec-redes">
   <div class="sec-hdr"><div class="sec-title">Redes</div></div>
 
+  <!-- Métricas generales destacadas -->
+  <div class="card" style="margin-bottom:14px;background:linear-gradient(135deg,#7D2027 0%,#CF5527 100%);color:#fff;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+      <div style="font-size:13px;font-weight:800;color:rgba(255,255,255,.85);">📊 Cuenta de Instagram</div>
+      <button onclick="editarSeguidores()" style="background:rgba(255,255,255,.2);border:none;border-radius:8px;padding:4px 10px;font-size:11px;color:#fff;cursor:pointer;font-weight:700;">Editar</button>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;text-align:center;">
+      <div>
+        <div style="font-size:24px;font-weight:900;color:#fff;" id="red-seguidores-disp">–</div>
+        <div style="font-size:10px;color:rgba(255,255,255,.75);margin-top:2px;">Seguidores</div>
+      </div>
+      <div>
+        <div style="font-size:24px;font-weight:900;color:#fff;" id="red-alcance-gral">0</div>
+        <div style="font-size:10px;color:rgba(255,255,255,.75);margin-top:2px;">Alcance total</div>
+      </div>
+      <div>
+        <div style="font-size:24px;font-weight:900;color:#fff;" id="red-eng-gral">0%</div>
+        <div style="font-size:10px;color:rgba(255,255,255,.75);margin-top:2px;">Eng. prom.</div>
+      </div>
+    </div>
+  </div>
+
   <!-- KPIs redes — fila 1 -->
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
     <div class="card" style="text-align:center;">
@@ -1949,8 +1971,18 @@ function guardarTarea(){
 
 // REDES
 const REDES_KEY='isbe_redes_v1';
+const REDES_META_KEY='isbe_redes_meta_v1';
 function getRedes(){try{return JSON.parse(localStorage.getItem(REDES_KEY))||[];}catch{return[];}}
 function setRedes(d){localStorage.setItem(REDES_KEY,JSON.stringify(d));}
+function getRedesMeta(){try{return JSON.parse(localStorage.getItem(REDES_META_KEY))||{};}catch{return{};}}
+function setRedesMeta(d){localStorage.setItem(REDES_META_KEY,JSON.stringify(d));}
+function editarSeguidores(){
+  const meta=getRedesMeta();
+  const val=prompt('¿Cuántos seguidores tienes actualmente?',meta.seguidores||'');
+  if(val===null)return;
+  const n=parseInt(val.replace(/\D/g,''));
+  if(!isNaN(n)){meta.seguidores=n;setRedesMeta(meta);renderRedes();showToast('✓ Seguidores actualizados','ok');}
+}
 let chartRedAlcance=null,chartRedFormato=null,chartRedInter=null,chartRedDia=null,chartRedOrgPau=null;
 function destroyRedCharts(){[chartRedAlcance,chartRedFormato,chartRedInter,chartRedDia,chartRedOrgPau].forEach(c=>{if(c)c.destroy();});chartRedAlcance=chartRedFormato=chartRedInter=chartRedDia=chartRedOrgPau=null;}
 
@@ -2111,6 +2143,13 @@ function renderRedes(){
   const hace4sem=new Date(hoy.getTime()-28*24*60*60*1000);
   const recientes=posts.filter(p=>{if(!p.fecha)return false;return new Date(p.fecha+'T12:00:00')>=hace4sem;});
   const freq=(recientes.length/4).toFixed(1);
+
+  // Métricas generales
+  const meta=getRedesMeta();
+  const segStr=meta.seguidores!=null?meta.seguidores.toLocaleString('es-CO'):'–';
+  document.getElementById('red-seguidores-disp').textContent=segStr;
+  document.getElementById('red-alcance-gral').textContent=totalAlcance>=1000?Math.round(totalAlcance/1000)+'K':totalAlcance.toLocaleString('es-CO');
+  document.getElementById('red-eng-gral').textContent=avgEng.toFixed(1)+'%';
 
   document.getElementById('red-total').textContent=posts.length;
   document.getElementById('red-mes').textContent=desMes.length;
