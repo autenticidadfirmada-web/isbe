@@ -482,7 +482,10 @@ select.form-control{background-image:url("data:image/svg+xml,%3Csvg xmlns='http:
     </div>
 
     <!-- Stats rápidos -->
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:16px;" id="pe-stats"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px;" id="pe-stats"></div>
+
+    <!-- Banner recuperación inversión -->
+    <div id="pe-recuperacion-banner" style="display:none;"></div>
 
     <div class="chart-wrap" style="height:220px;"><canvas id="chart-pe"></canvas></div>
   </div>
@@ -1442,28 +1445,65 @@ function renderFinanzas(){
       <div style="font-size:16px;font-weight:800;color:${yaPasoPE?'#1a8a45':'#b03a2e'};">${fmt(Math.abs(utilActual))}</div>
     </div>`;
 
+  // Punto de recuperación de inversión: unidades donde utilidad >= inversión inicial
+  const uRecuperacion = mc > 0 ? Math.ceil((totalCostosFijos + inversion) / mc) : 0;
+  const yaRecupero = ventasActuales >= uRecuperacion && uRecuperacion > 0;
+  const ingEnRecuperacion = uRecuperacion * precioVarProm;
+
+  // Actualizar stats con recuperación
+  document.getElementById('pe-stats').innerHTML=`
+    <div style="text-align:center;background:#f9f9f9;border-radius:10px;padding:10px;">
+      <div style="font-size:10px;color:#888;margin-bottom:4px;">Vendidas</div>
+      <div style="font-size:20px;font-weight:800;color:#1d1d1f;">${ventasActuales}</div>
+    </div>
+    <div style="text-align:center;background:#f9f9f9;border-radius:10px;padding:10px;">
+      <div style="font-size:10px;color:#888;margin-bottom:4px;">PE (cubrir costos)</div>
+      <div style="font-size:20px;font-weight:800;color:var(--red);">${pe}</div>
+    </div>
+    <div style="text-align:center;background:${yaPasoPE?'#eaf9f0':'#fff0f0'};border-radius:10px;padding:10px;">
+      <div style="font-size:10px;color:#888;margin-bottom:4px;">${yaPasoPE?'Utilidad':'Déficit'}</div>
+      <div style="font-size:16px;font-weight:800;color:${yaPasoPE?'#1a8a45':'#b03a2e'};">${fmt(Math.abs(utilActual))}</div>
+    </div>`;
+
+  // Banner de recuperación de inversión
+  const bannerEl=document.getElementById('pe-recuperacion-banner');
+  if(bannerEl){
+    if(uRecuperacion>0){
+      bannerEl.style.display='';
+      bannerEl.innerHTML=yaRecupero
+        ?`<div style="background:#eaf9f0;border-left:3px solid #1a8a45;border-radius:0 10px 10px 0;padding:10px 14px;margin-bottom:12px;"><span style="font-weight:800;color:#1a8a45;">✅ ¡Inversión recuperada!</span> <span style="font-size:12px;color:#555;">Recuperaste ${fmt(inversion)} a las ${uRecuperacion} unidades. Ya estás generando ganancia pura.</span></div>`
+        :`<div style="background:#fff8f0;border-left:3px solid #CF5527;border-radius:0 10px 10px 0;padding:10px 14px;margin-bottom:12px;"><span style="font-weight:800;color:#CF5527;">💰 Recuperar inversión:</span> <span style="font-size:12px;color:#555;">Necesitas <strong>${uRecuperacion} unidades</strong> en total (te faltan <strong>${Math.max(0,uRecuperacion-ventasActuales)}</strong>). El punto naranja en la gráfica es tu meta.</span></div>`;
+    } else { bannerEl.style.display='none'; }
+  }
+
   if(chartPE)chartPE.destroy();
-  const maxU=Math.max(pe*2,ventasActuales+5,20);
-  const us=Array.from({length:maxU+1},(_,i)=>i);
+  const maxU=Math.max(pe*2, uRecuperacion*1.2, ventasActuales+5, 20);
+  const us=Array.from({length:Math.ceil(maxU)+1},(_,i)=>i);
   const ingData=us.map(u=>u*precioVarProm);
   const costoData=us.map(u=>totalCostosFijos+u*costoVarProm);
   chartPE=new Chart(document.getElementById('chart-pe').getContext('2d'),{
     type:'line',
     data:{labels:us,datasets:[
-      {label:'Ingresos',data:ingData,borderColor:'#1a8a45',backgroundColor:'rgba(26,138,69,.1)',fill:true,tension:.4,pointRadius:0},
-      {label:'Costos totales',data:costoData,borderColor:'#b03a2e',backgroundColor:'rgba(176,58,46,.1)',fill:true,tension:.4,pointRadius:0},
-      {label:'Posición actual',data:us.map(u=>u===ventasActuales?ingActual:null),borderColor:'#1d1d1f',backgroundColor:'#1d1d1f',pointRadius:us.map(u=>u===ventasActuales?7:0),pointStyle:'circle',showLine:false}
+      {label:'Ingresos',data:ingData,borderColor:'#1a8a45',backgroundColor:'rgba(26,138,69,.08)',fill:true,tension:.4,pointRadius:0},
+      {label:'Costos totales',data:costoData,borderColor:'#b03a2e',backgroundColor:'rgba(176,58,46,.08)',fill:true,tension:.4,pointRadius:0},
+      {label:'Posición actual',data:us.map(u=>u===ventasActuales?ingActual:null),borderColor:'#1d1d1f',backgroundColor:'#1d1d1f',pointRadius:us.map(u=>u===ventasActuales?7:0),pointStyle:'circle',showLine:false},
+      ...(uRecuperacion>0?[{
+        label:'Recuperar inversión',
+        data:us.map(u=>u===uRecuperacion?ingEnRecuperacion:null),
+        borderColor:'#CF5527',backgroundColor:'#CF5527',
+        pointRadius:us.map(u=>u===uRecuperacion?9:0),
+        pointStyle:'star',showLine:false
+      }]:[])
     ]},
     options:{
       responsive:true,maintainAspectRatio:false,
       plugins:{
-        legend:{position:'bottom',labels:{font:{size:10}}},
-        annotation:{},
+        legend:{position:'bottom',labels:{font:{size:10},filter:item=>item.text!=='Posición actual'||ventasActuales>0}},
         tooltip:{callbacks:{label:ctx=>ctx.dataset.label+': '+fmt(ctx.raw)}}
       },
       scales:{
-        y:{ticks:{callback:v=>'$'+v.toLocaleString('es-CO')}},
-        x:{title:{display:true,text:'Unidades vendidas'}}
+        y:{ticks:{callback:v=>'$'+Math.round(v).toLocaleString('es-CO'),font:{size:9}}},
+        x:{title:{display:true,text:'Unidades vendidas',font:{size:10}},ticks:{font:{size:9}}}
       }
     }
   });
