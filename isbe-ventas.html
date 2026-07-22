@@ -1917,7 +1917,20 @@ function previewPostImg(input){
   const file=input.files[0];
   if(!file)return;
   const reader=new FileReader();
-  reader.onload=e=>{setPostImgPreview(e.target.result);};
+  reader.onload=e=>{
+    const img=new Image();
+    img.onload=()=>{
+      const MAX=800;
+      let w=img.width,h=img.height;
+      if(w>MAX){h=Math.round(h*MAX/w);w=MAX;}
+      const canvas=document.createElement('canvas');
+      canvas.width=w;canvas.height=h;
+      canvas.getContext('2d').drawImage(img,0,0,w,h);
+      const compressed=canvas.toDataURL('image/jpeg',0.72);
+      setPostImgPreview(compressed);
+    };
+    img.src=e.target.result;
+  };
   reader.readAsDataURL(file);
 }
 function setPostImgPreview(src){
@@ -2008,7 +2021,17 @@ function guardarPost(){
     const idx=posts.findIndex(p=>p.id===idVal);
     if(idx>=0)posts[idx]=obj; else posts.push(obj);
   } else {posts.push(obj);}
-  setRedes(posts);closePostModal();renderRedes();showToast('✓ Post guardado','ok');
+  try{
+    setRedes(posts);
+    closePostModal();renderRedes();showToast('✓ Post guardado','ok');
+  } catch(e){
+    // Si falla por imagen muy grande, guardar sin imagen
+    obj.img='';
+    const posts2=getRedes();
+    if(idVal){const idx=posts2.findIndex(p=>p.id===idVal);if(idx>=0)posts2[idx]=obj;else posts2.push(obj);}else{posts2.push(obj);}
+    setRedes(posts2);closePostModal();renderRedes();
+    showToast('Post guardado sin imagen (muy pesada)','ok');
+  }
 }
 
 function eliminarPost(){
