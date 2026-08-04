@@ -208,6 +208,8 @@ select.form-control{background-image:url("data:image/svg+xml,%3Csvg xmlns='http:
     <div class="sb-item" onclick="navTo('tareas')"><span class="sb-icon">✅</span>Tareas</div>
     <div class="sb-item" onclick="navTo('reportes')"><span class="sb-icon">📈</span>Reportes</div>
     <div class="sb-item" onclick="navTo('redes')"><span class="sb-icon">📸</span>Redes</div>
+    <div class="sb-item" onclick="navTo('feria')"><span class="sb-icon">🌸</span>Feria Eva</div>
+    <div class="sb-item" onclick="navTo('coleccion')"><span class="sb-icon">🏪</span>La Colección</div>
   </div>
 </div>
 <div id="overlay" onclick="closeSidebar()"></div>
@@ -325,6 +327,8 @@ select.form-control{background-image:url("data:image/svg+xml,%3Csvg xmlns='http:
 <!-- NUEVA VENTA -->
 <div class="sec" id="sec-nueva">
   <div class="sec-hdr"><div class="sec-title">Nueva Venta</div></div>
+  <!-- Badge canal activo -->
+  <div id="nueva-canal-badge" style="display:none;background:#fff8f0;border-left:3px solid #CF5527;border-radius:0 10px 10px 0;padding:8px 14px;margin-bottom:12px;font-size:13px;font-weight:700;color:#CF5527;"></div>
   <div class="card">
     <div class="form-group">
       <label class="form-label">Referencia</label>
@@ -866,6 +870,107 @@ select.form-control{background-image:url("data:image/svg+xml,%3Csvg xmlns='http:
   </div>
 </div>
 
+<!-- FERIA EVA -->
+<div class="sec" id="sec-feria">
+  <div class="sec-hdr"><div class="sec-title">🌸 Feria Eva</div></div>
+
+  <!-- KPIs -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;">
+    <div class="card" style="text-align:center;"><div class="card-sub">Ventas en feria</div><div class="card-num" id="fer-total">0</div></div>
+    <div class="card" style="text-align:center;"><div class="card-sub">Ingresos feria</div><div class="card-num" id="fer-ing">$0</div></div>
+    <div class="card" style="text-align:center;"><div class="card-sub">Utilidad feria</div><div class="card-num" id="fer-util">$0</div></div>
+    <div class="card" style="text-align:center;"><div class="card-sub">Unidades enviadas</div><div class="card-num" id="fer-inv-total">0</div></div>
+  </div>
+
+  <!-- Top vendidos -->
+  <div class="card" style="margin-bottom:14px;">
+    <div style="font-size:13px;font-weight:800;margin-bottom:10px;">🏆 Más vendidos en feria</div>
+    <div id="fer-top"></div>
+  </div>
+
+  <!-- Inventario enviado -->
+  <div class="card" style="margin-bottom:14px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+      <div style="font-size:13px;font-weight:800;">📦 Inventario enviado</div>
+      <button onclick="openCanalInvModal('feria')" style="background:var(--red);border:none;border-radius:8px;padding:5px 12px;color:#fff;font-size:12px;font-weight:700;cursor:pointer;">+ Agregar</button>
+    </div>
+    <div id="fer-inventario"></div>
+  </div>
+
+  <!-- Ventas -->
+  <button onclick="abrirNuevaVentaCanal('feria_eva')" class="btn btn-primary" style="width:100%;margin-bottom:14px;">🌸 Registrar venta en feria</button>
+  <div class="card">
+    <div style="font-size:13px;font-weight:800;margin-bottom:10px;">📋 Ventas registradas</div>
+    <div id="fer-ventas"></div>
+  </div>
+</div>
+
+<!-- LA COLECCIÓN -->
+<div class="sec" id="sec-coleccion">
+  <div class="sec-hdr"><div class="sec-title">🏪 La Colección</div></div>
+
+  <!-- Nota comisión -->
+  <div style="background:#fff8f0;border-left:3px solid #CF5527;border-radius:0 10px 10px 0;padding:10px 14px;margin-bottom:14px;font-size:12px;color:#555;">
+    <strong style="color:#CF5527;">30% de comisión</strong> — El multimarca retiene el 30% del precio de venta. Los ingresos que ves aquí ya reflejan tu 70%.
+  </div>
+
+  <!-- KPIs -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;">
+    <div class="card" style="text-align:center;"><div class="card-sub">Ventas registradas</div><div class="card-num" id="col-total">0</div></div>
+    <div class="card" style="text-align:center;"><div class="card-sub">Ingresos netos (70%)</div><div class="card-num" id="col-ing">$0</div></div>
+    <div class="card" style="text-align:center;"><div class="card-sub">Comisión pagada (30%)</div><div class="card-num" id="col-comision">$0</div></div>
+    <div class="card" style="text-align:center;"><div class="card-sub">Utilidad neta</div><div class="card-num" id="col-util">$0</div></div>
+    <div class="card" style="text-align:center;"><div class="card-sub">Unidades en consignación</div><div class="card-num" id="col-inv-total">0</div></div>
+    <div class="card" style="text-align:center;"><div class="card-sub">Más vendido</div><div class="card-num" style="font-size:13px;" id="col-top-prod">–</div></div>
+  </div>
+
+  <!-- Top vendidos -->
+  <div class="card" style="margin-bottom:14px;">
+    <div style="font-size:13px;font-weight:800;margin-bottom:10px;">🏆 Más vendidos en La Colección</div>
+    <div id="col-top"></div>
+  </div>
+
+  <!-- Inventario consignado -->
+  <div class="card" style="margin-bottom:14px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+      <div style="font-size:13px;font-weight:800;">📦 Consignación activa</div>
+      <button onclick="openCanalInvModal('coleccion')" style="background:var(--red);border:none;border-radius:8px;padding:5px 12px;color:#fff;font-size:12px;font-weight:700;cursor:pointer;">+ Agregar</button>
+    </div>
+    <div id="col-inventario"></div>
+  </div>
+
+  <!-- Ventas -->
+  <button onclick="abrirNuevaVentaCanal('la_coleccion')" class="btn btn-primary" style="width:100%;margin-bottom:14px;">🏪 Registrar venta en La Colección</button>
+  <div class="card">
+    <div style="font-size:13px;font-weight:800;margin-bottom:10px;">📋 Ventas registradas</div>
+    <div id="col-ventas"></div>
+  </div>
+</div>
+
+<!-- MODAL INVENTARIO CANAL -->
+<div class="modal" id="modal-canal-inv">
+  <div class="modal-box">
+    <button class="modal-close" onclick="document.getElementById('modal-canal-inv').classList.remove('show')">×</button>
+    <div class="modal-title" id="canal-inv-title">Agregar al inventario</div>
+    <input type="hidden" id="canal-inv-cual">
+    <input type="hidden" id="canal-inv-edit-idx">
+    <div class="form-group">
+      <label class="form-label">Modelo / Referencia</label>
+      <input id="canal-inv-modelo" class="form-control" placeholder="Ej: Cartera tote negra">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Cantidad</label>
+      <input id="canal-inv-cant" class="form-control" type="number" min="1" placeholder="1">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Costo unitario</label>
+      <input id="canal-inv-costo" class="form-control" type="text" inputmode="numeric" placeholder="0">
+    </div>
+    <button class="btn btn-primary" onclick="guardarCanalInv()" style="width:100%;">Guardar</button>
+    <button id="canal-inv-del" onclick="eliminarCanalInv()" class="btn btn-secondary" style="width:100%;margin-top:8px;display:none;">Eliminar</button>
+  </div>
+</div>
+
 <!-- MODAL POST -->
 <div class="modal" id="modal-post">
   <div class="modal-box">
@@ -1124,8 +1229,8 @@ function guardarSyncURL(){
 }
 
 // NAV
-const NAVS={dashboard:'Dashboard',nueva:'Nueva Venta',pedidos:'Pedidos',historial:'Historial',finanzas:'Finanzas',inventario:'Inventario',socios:'Mi cuenta',tareas:'Tareas',reportes:'Reportes',redes:'Redes'};
-const SUBS={dashboard:'Resumen general de tu negocio',nueva:'Registra una nueva venta',pedidos:'Ventas pendientes de entrega',historial:'Todas las ventas registradas',finanzas:'Inversión y punto de equilibrio',inventario:'Control de stock',socios:'Tu inversión y retiros',tareas:'Plan 25 jun – 25 jul',reportes:'Análisis de ventas y tendencias',redes:'Tracker de contenido e Instagram'};
+const NAVS={dashboard:'Dashboard',nueva:'Nueva Venta',pedidos:'Pedidos',historial:'Historial',finanzas:'Finanzas',inventario:'Inventario',socios:'Mi cuenta',tareas:'Tareas',reportes:'Reportes',redes:'Redes',feria:'Feria Eva',coleccion:'La Colección'};
+const SUBS={dashboard:'Resumen general de tu negocio',nueva:'Registra una nueva venta',pedidos:'Ventas pendientes de entrega',historial:'Todas las ventas registradas',finanzas:'Inversión y punto de equilibrio',inventario:'Control de stock',socios:'Tu inversión y retiros',tareas:'Plan 25 jun – 25 jul',reportes:'Análisis de ventas y tendencias',redes:'Tracker de contenido e Instagram',feria:'Ventas y top productos de la feria',coleccion:'Consignación y ventas – 30% comisión'};
 function navTo(id){
   Object.keys(NAVS).forEach(k=>{
     document.getElementById('sec-'+k).classList.toggle('active',k===id);
@@ -1133,6 +1238,8 @@ function navTo(id){
   document.querySelectorAll('.sb-item').forEach((el,i)=>el.classList.toggle('active',Object.keys(NAVS)[i]===id));
   document.getElementById('hdr-title').textContent=NAVS[id]||'';
   document.getElementById('hdr-sub').textContent=SUBS[id]||'';
+  // Resetear canal si no es nueva venta
+  if(id!=='nueva'){window._canalActivo='directa';const b=document.getElementById('nueva-canal-badge');if(b)b.style.display='none';}
   closeSidebar();
   if(id==='dashboard')renderDashboard();
   if(id==='historial')renderHistorial();
@@ -1143,6 +1250,8 @@ function navTo(id){
   if(id==='tareas')renderTareas();
   if(id==='reportes'){populateRepAños();populateRepSub();renderReportes();}
   if(id==='redes')renderRedes();
+  if(id==='feria')renderFeria();
+  if(id==='coleccion')renderColeccion();
 }
 function toggleSidebar(){document.getElementById('sidebar').classList.toggle('open');document.getElementById('overlay').classList.toggle('show');}
 function closeSidebar(){document.getElementById('sidebar').classList.remove('open');document.getElementById('overlay').classList.remove('show');}
@@ -1159,6 +1268,8 @@ function showToast(msg,type){
 function fmt(n){return '$'+Math.round(n||0).toLocaleString('es-CO');}
 function parsePeso(s){return parseInt((s||'').replace(/\D/g,''))||0;}
 function fechaHoy(){return new Date().toISOString().split('T')[0];}
+// Ingreso neto: descuenta comisión del canal (ej. La Colección = 30%)
+function ingresoNeto(v){return (v.precio||0)*(1-(v.comisionCanal||0)/100)+(v.domicilio||0);}
 function pagoColor(p){const m={Nu:'#820ad1',Bancolombia:'#f39c12',Bold:'#1a6aff',Efectivo:'#27ae60'};return m[p]||'#888';}
 
 function populateAños(){
@@ -1188,7 +1299,7 @@ function getFiltered(){
 function renderDashboard(){
   const filtered=getFiltered();
   const comp=filtered.filter(v=>v.estado!=='cancelada');
-  const ing=comp.reduce((s,v)=>s+(v.precio||0)+(v.domicilio||0),0);
+  const ing=comp.reduce((s,v)=>s+ingresoNeto(v),0);
   const costo=comp.reduce((s,v)=>s+(v.costo||0)+(v.transporte||0),0);
   const gastos=comp.reduce((s,v)=>s+(v.gastos||0),0);
   const util=ing-costo-gastos;
@@ -1285,8 +1396,12 @@ function guardarVenta(){
   if(!producto){showToast('Selecciona un producto','err');return;}
   const precio=parsePeso(document.getElementById('f-precio').value);
   if(!precio){showToast('Ingresa el precio','err');return;}
+  const canalActivo=window._canalActivo||'directa';
+  const comisionCanal=canalActivo==='la_coleccion'?30:0;
   const venta={
     id:Date.now(),producto,
+    canal:canalActivo,
+    comisionCanal,
     color:document.getElementById('f-color').value,
     descripcion:document.getElementById('f-desc').value.trim(),
     direccion:document.getElementById('f-direccion').value.trim(),
@@ -1384,7 +1499,7 @@ function renderFinanzas(){
     </div>`).join('')||'<div style="color:#aaa;font-size:13px;padding:8px 0;">Sin costos registrados</div>';
 
   const ventas=getVentas().filter(v=>v.estado!=='cancelada');
-  const ing=ventas.reduce((s,v)=>s+(v.precio||0)+(v.domicilio||0),0);
+  const ing=ventas.reduce((s,v)=>s+ingresoNeto(v),0);
   const prod=ventas.reduce((s,v)=>s+(v.costo||0),0);
   const trans=ventas.reduce((s,v)=>s+(v.transporte||0),0);
   const gasAd=ventas.reduce((s,v)=>s+(v.gastos||0),0);
@@ -1601,7 +1716,7 @@ function renderSocios(){
   const fin=getFinanzas();
   const fijos=(fin.gastosFijos||[]).reduce((s,g)=>s+(g.monto||0),0);
   const vars=(fin.costosVar||[]).reduce((s,g)=>s+(g.monto||0),0);
-  const ing=ventas.reduce((s,v)=>s+(v.precio||0)+(v.domicilio||0),0);
+  const ing=ventas.reduce((s,v)=>s+ingresoNeto(v),0);
   const costos=ventas.reduce((s,v)=>s+(v.costo||0)+(v.transporte||0)+(v.gastos||0),0);
   const utilTotal=ing-costos-fijos-vars;
   const repartos=soc.repartos||[];
@@ -1699,7 +1814,7 @@ function renderReportes(){
   });
 
   // KPIs
-  const ing=filtered.reduce((s,v)=>s+(v.precio||0)+(v.domicilio||0),0);
+  const ing=filtered.reduce((s,v)=>s+ingresoNeto(v),0);
   const costo=filtered.reduce((s,v)=>s+(v.costo||0)+(v.transporte||0)+(v.gastos||0),0);
   const util=ing-costo;
   const margen=ing?Math.round(util/ing*100):0;
@@ -1719,13 +1834,13 @@ function renderReportes(){
     dataIng=[0,0,0,0]; dataUtil=[0,0,0,0];
     filtered.forEach(v=>{
       const w=Math.min(3,Math.floor((new Date(v.fecha+'T12:00:00').getDate()-1)/7));
-      const i=(v.precio||0)+(v.domicilio||0);
+      const i=ingresoNeto(v);
       const c=(v.costo||0)+(v.transporte||0)+(v.gastos||0);
       dataIng[w]+=i; dataUtil[w]+=(i-c);
     });
   } else {
     labels=meses.map(m=>MESES_NOM[m]);
-    dataIng=meses.map(m=>filtered.filter(v=>new Date(v.fecha+'T12:00:00').getMonth()===m).reduce((s,v)=>s+(v.precio||0)+(v.domicilio||0),0));
+    dataIng=meses.map(m=>filtered.filter(v=>new Date(v.fecha+'T12:00:00').getMonth()===m).reduce((s,v)=>s+ingresoNeto(v),0));
     dataUtil=meses.map((m,i)=>dataIng[i]-meses.map(m=>filtered.filter(v=>new Date(v.fecha+'T12:00:00').getMonth()===m).reduce((s,v)=>s+(v.costo||0)+(v.transporte||0)+(v.gastos||0),0))[i]);
   }
   if(chartRepVentas)chartRepVentas.destroy();
@@ -2476,6 +2591,144 @@ function renderRedes(){
         </div>
       </div>`).join('');
   }
+}
+
+// CANALES: FERIA EVA + LA COLECCIÓN
+const CANAL_INV_KEY={feria:'isbe_feria_inv_v1',coleccion:'isbe_col_inv_v1'};
+function getCanalInv(c){try{return JSON.parse(localStorage.getItem(CANAL_INV_KEY[c]))||[];}catch{return[];}}
+function setCanalInv(c,d){localStorage.setItem(CANAL_INV_KEY[c],JSON.stringify(d));}
+
+function abrirNuevaVentaCanal(canal){
+  window._canalActivo=canal;
+  // Mostrar badge del canal en el header del form
+  const badge=document.getElementById('nueva-canal-badge');
+  if(badge){
+    const nombres={feria_eva:'🌸 Feria Eva',la_coleccion:'🏪 La Colección',directa:'🛍️ Directa'};
+    badge.textContent=nombres[canal]||canal;
+    badge.style.display='';
+  }
+  navTo('nueva');
+}
+
+function openCanalInvModal(canal){
+  document.getElementById('canal-inv-cual').value=canal;
+  document.getElementById('canal-inv-edit-idx').value='';
+  document.getElementById('canal-inv-del').style.display='none';
+  document.getElementById('canal-inv-title').textContent=canal==='feria'?'🌸 Agregar a Feria Eva':'🏪 Agregar a La Colección';
+  document.getElementById('canal-inv-modelo').value='';
+  document.getElementById('canal-inv-cant').value='1';
+  document.getElementById('canal-inv-costo').value='';
+  document.getElementById('modal-canal-inv').classList.add('show');
+}
+function editarCanalInv(canal,idx){
+  const inv=getCanalInv(canal);
+  const item=inv[idx];
+  if(!item)return;
+  document.getElementById('canal-inv-cual').value=canal;
+  document.getElementById('canal-inv-edit-idx').value=idx;
+  document.getElementById('canal-inv-del').style.display='';
+  document.getElementById('canal-inv-title').textContent='Editar unidad';
+  document.getElementById('canal-inv-modelo').value=item.modelo||'';
+  document.getElementById('canal-inv-cant').value=item.cantidad||1;
+  document.getElementById('canal-inv-costo').value=item.costo||'';
+  document.getElementById('modal-canal-inv').classList.add('show');
+}
+function guardarCanalInv(){
+  const canal=document.getElementById('canal-inv-cual').value;
+  const idx=document.getElementById('canal-inv-edit-idx').value;
+  const obj={modelo:document.getElementById('canal-inv-modelo').value.trim(),cantidad:parseInt(document.getElementById('canal-inv-cant').value)||1,costo:parsePeso(document.getElementById('canal-inv-costo').value)};
+  if(!obj.modelo){showToast('Escribe el modelo','err');return;}
+  const inv=getCanalInv(canal);
+  if(idx!==''){inv[parseInt(idx)]=obj;}else{inv.push(obj);}
+  setCanalInv(canal,inv);
+  document.getElementById('modal-canal-inv').classList.remove('show');
+  if(canal==='feria')renderFeria();else renderColeccion();
+  showToast('✓ Guardado','ok');
+}
+function eliminarCanalInv(){
+  const canal=document.getElementById('canal-inv-cual').value;
+  const idx=parseInt(document.getElementById('canal-inv-edit-idx').value);
+  const inv=getCanalInv(canal).filter((_,i)=>i!==idx);
+  setCanalInv(canal,inv);
+  document.getElementById('modal-canal-inv').classList.remove('show');
+  if(canal==='feria')renderFeria();else renderColeccion();
+  showToast('Eliminado','ok');
+}
+
+function renderTopVendidos(ventas,elId){
+  const conteo={};
+  ventas.forEach(v=>{if(v.producto)conteo[v.producto]=(conteo[v.producto]||0)+1;});
+  const sorted=Object.entries(conteo).sort((a,b)=>b[1]-a[1]).slice(0,5);
+  const max=sorted[0]?sorted[0][1]:1;
+  document.getElementById(elId).innerHTML=sorted.length?sorted.map(([prod,n],i)=>`
+    <div style="margin-bottom:10px;">
+      <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;">
+        <span style="font-weight:${i===0?'800':'600'};color:${i===0?'var(--red)':'var(--text)'};">${i===0?'🥇':i===1?'🥈':'🥉'} ${prod}</span>
+        <span style="font-weight:700;color:#5FA8C2;">${n} und.</span>
+      </div>
+      <div style="background:#f0f0f0;border-radius:4px;height:5px;overflow:hidden;">
+        <div style="width:${n/max*100}%;height:100%;background:${i===0?'#7D2027':'#CF5527'};border-radius:4px;"></div>
+      </div>
+    </div>`).join(''):'<div style="color:#aaa;font-size:12px;text-align:center;padding:8px 0;">Registra ventas para ver el ranking</div>';
+}
+
+function renderVentasCanal(ventas,elId){
+  document.getElementById(elId).innerHTML=ventas.length?[...ventas].sort((a,b)=>(b.fecha||'').localeCompare(a.fecha||'')).slice(0,20).map(v=>`
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #f5f5f5;">
+      <div>
+        <div style="font-size:13px;font-weight:600;">${v.producto||'–'}</div>
+        <div style="font-size:11px;color:#888;">${v.fecha||''} · ${v.descripcion||''}</div>
+      </div>
+      <div style="text-align:right;">
+        <div style="font-size:13px;font-weight:700;color:var(--green);">${fmt(ingresoNeto(v))}</div>
+        ${v.comisionCanal?`<div style="font-size:10px;color:#888;">Público: ${fmt(v.precio)}</div>`:''}
+      </div>
+    </div>`).join(''):'<div style="color:#aaa;font-size:12px;text-align:center;padding:16px 0;">Sin ventas registradas</div>';
+}
+
+function renderInvCanal(canal,elId,totalElId){
+  const inv=getCanalInv(canal);
+  const total=inv.reduce((s,i)=>s+(i.cantidad||0),0);
+  if(totalElId)document.getElementById(totalElId).textContent=total;
+  document.getElementById(elId).innerHTML=inv.length?inv.map((item,i)=>`
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #f5f5f5;">
+      <div>
+        <div style="font-size:13px;font-weight:600;">${item.modelo}</div>
+        ${item.costo?`<div style="font-size:11px;color:#888;">Costo: ${fmt(item.costo)}</div>`:''}
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span style="font-size:18px;font-weight:800;color:var(--red);">${item.cantidad}</span>
+        <button onclick="editarCanalInv('${canal}',${i})" style="background:none;border:none;color:#888;cursor:pointer;font-size:14px;">✏️</button>
+      </div>
+    </div>`).join(''):'<div style="color:#aaa;font-size:12px;text-align:center;padding:12px 0;">Sin unidades enviadas</div>';
+}
+
+function renderFeria(){
+  const ventas=getVentas().filter(v=>v.canal==='feria_eva'&&v.estado!=='cancelada');
+  const ing=ventas.reduce((s,v)=>s+ingresoNeto(v),0);
+  const costo=ventas.reduce((s,v)=>s+(v.costo||0)+(v.transporte||0)+(v.gastos||0),0);
+  document.getElementById('fer-total').textContent=ventas.length;
+  document.getElementById('fer-ing').textContent=fmt(ing);
+  document.getElementById('fer-util').textContent=fmt(ing-costo);
+  renderTopVendidos(ventas,'fer-top');
+  renderInvCanal('feria','fer-inventario','fer-inv-total');
+  renderVentasCanal(ventas,'fer-ventas');
+}
+
+function renderColeccion(){
+  const ventas=getVentas().filter(v=>v.canal==='la_coleccion'&&v.estado!=='cancelada');
+  const ing=ventas.reduce((s,v)=>s+ingresoNeto(v),0);
+  const comision=ventas.reduce((s,v)=>s+(v.precio||0)*(v.comisionCanal||0)/100,0);
+  const costo=ventas.reduce((s,v)=>s+(v.costo||0)+(v.transporte||0)+(v.gastos||0),0);
+  const topProd=Object.entries(ventas.reduce((acc,v)=>{if(v.producto)acc[v.producto]=(acc[v.producto]||0)+1;return acc;},{})).sort((a,b)=>b[1]-a[1])[0];
+  document.getElementById('col-total').textContent=ventas.length;
+  document.getElementById('col-ing').textContent=fmt(ing);
+  document.getElementById('col-comision').textContent=fmt(comision);
+  document.getElementById('col-util').textContent=fmt(ing-costo);
+  document.getElementById('col-top-prod').textContent=topProd?topProd[0]:'–';
+  renderTopVendidos(ventas,'col-top');
+  renderInvCanal('coleccion','col-inventario','col-inv-total');
+  renderVentasCanal(ventas,'col-ventas');
 }
 
 // IMPORT / EXPORT
